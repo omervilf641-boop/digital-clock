@@ -36,7 +36,7 @@ Hosting it on GitHub Pages works as-is: Settings → Pages → deploy from the d
 | **Share link** | Copies a URL that reopens the exact plan — same cities, same moment, same working hours — for whoever you send it to. |
 | **Calendar invite** | Downloads a `.ics` for the selected moment and length, with every city's local time in the description. |
 | **Copy summary** | A plain-text block for Slack or email: every city, its local time and whether that lands outside their day. |
-| **12/24 hour, light/dark** | Both remembered between visits, along with your city list. |
+| **12/24 hour, light/dark** | The theme follows your OS on a first visit and your toggle after that. Both remembered, along with your city list. |
 
 Everything is stored in `localStorage` on your own machine. Nothing is sent anywhere.
 

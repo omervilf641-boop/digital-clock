@@ -79,6 +79,11 @@ const ALIASES = {
 const EMOJI = Object.fromEntries(CURATED.map(([tz, , emoji]) => [tz, emoji]));
 const NICE_NAME = Object.fromEntries(CURATED.map(([tz, name]) => [tz, name]));
 
+/** First visit follows the reader's OS setting; after that their toggle wins. */
+function prefersLight() {
+    return typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: light)').matches;
+}
+
 /* ------------------------------------------------------------------ *
  * State
  * ------------------------------------------------------------------ */
@@ -86,7 +91,7 @@ const NICE_NAME = Object.fromEntries(CURATED.map(([tz, name]) => [tz, name]));
 const state = {
     zones: [],
     hour12: false,
-    theme: 'dark',
+    theme: prefersLight() ? 'light' : 'dark',
     live: true,
     refZone: DEVICE_TZ,
     workStart: 9,
@@ -248,7 +253,7 @@ function load() {
     state.zones = Array.isArray(saved.zones) ? saved.zones.filter(knownZone) : defaultZones();
     if (!state.zones.length) state.zones = defaultZones();
     state.hour12 = !!saved.hour12;
-    state.theme = saved.theme === 'light' ? 'light' : 'dark';
+    if (saved.theme === 'light' || saved.theme === 'dark') state.theme = saved.theme;
     state.refZone = knownZone(saved.refZone) ? saved.refZone : DEVICE_TZ;
     if (Number.isInteger(saved.workStart)) state.workStart = saved.workStart;
     if (Number.isInteger(saved.workEnd)) state.workEnd = saved.workEnd;
@@ -262,6 +267,15 @@ function load() {
  * reference zone, the moment (or "live"), working hours and clock format.
  * Theme stays whatever the reader picked.
  * ------------------------------------------------------------------ */
+
+/** Some embeds (sandboxed frames) refuse history writes — the link still works. */
+function replaceUrl(url) {
+    try {
+        history.replaceState(null, '', url);
+    } catch {
+        /* not fatal: the URL bar just keeps whatever it had */
+    }
+}
 
 function buildShareUrl() {
     const params = new URLSearchParams();
@@ -788,7 +802,7 @@ function shareLink() {
         return;
     }
     const url = buildShareUrl();
-    history.replaceState(null, '', url);
+    replaceUrl(url);
     const done = () => toast('Link copied — it reopens this exact plan');
     if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(url).then(done, () => fallbackCopy(url, done));
@@ -954,7 +968,7 @@ function init() {
     if (shared) {
         // Leave the reader's saved plan untouched until they edit something,
         // and drop the hash so a later reload isn't pinned to a stale moment.
-        history.replaceState(null, '', location.pathname + location.search);
+        replaceUrl(location.pathname + location.search);
     }
     applyTheme();
     el.formatBtn.textContent = state.hour12 ? '12h' : '24h';
