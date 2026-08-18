@@ -3,32 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⏰ Digital Clock - Multi Timezone</title>
+    <title>Global Time Planner</title>
+    <meta name="description" content="Live world clocks plus a scrubbable timeline that finds meeting windows everyone can attend.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%236ea8ff'/%3E%3Cpath d='M16 8v9l6 3' stroke='%2306122b' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🌍 Global Digital Clock</h1>
-            <p>Real-time display across multiple time zones</p>
+    <div class="app">
+        <header class="topbar">
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true">◷</span>
+                <div>
+                    <h1>Global Time Planner</h1>
+                    <p class="tagline">Live world clocks &mdash; and a timeline that finds a slot everyone can make.</p>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <button id="formatBtn" class="ghost" type="button" title="Switch between 24-hour and 12-hour time">24h</button>
+                <button id="themeBtn" class="ghost" type="button" title="Switch theme" aria-label="Switch theme">☾</button>
+            </div>
         </header>
 
-        <div class="controls">
-            <div class="search-box">
-                <input type="text" id="timezoneInput" placeholder="Search timezone (e.g., New York, Tokyo)...">
-                <button onclick="searchTimezone()">Add Timezone</button>
+        <section class="panel planner" aria-label="Meeting planner">
+            <div class="planner-head">
+                <label class="field">
+                    <span>Reference zone</span>
+                    <select id="refZone"></select>
+                </label>
+                <label class="field">
+                    <span>Date</span>
+                    <input type="date" id="planDate">
+                </label>
+                <div class="readout">
+                    <span class="readout-time" id="planTime">--:--</span>
+                    <span class="readout-zone" id="planZoneLabel">&mdash;</span>
+                </div>
+                <button id="nowBtn" class="primary" type="button">Back to live</button>
             </div>
-            <div class="button-group">
-                <button onclick="toggleFormat()" class="format-btn">🔄 Toggle 12/24 Hour</button>
-                <button onclick="resetDefault()" class="reset-btn">🔄 Reset to Default</button>
-            </div>
-        </div>
 
-        <div class="clocks-grid" id="clocksGrid">
-            <!-- Clocks will be dynamically added here -->
-        </div>
+            <input type="range" id="planSlider" min="0" max="95" step="1" value="36"
+                   aria-label="Time of day in the reference zone">
+
+            <div class="overlap">
+                <div class="overlap-labels" id="overlapLabels" aria-hidden="true"></div>
+                <div class="overlap-strip" id="overlapStrip" role="group" aria-label="Overlap by hour"></div>
+                <div class="overlap-foot">
+                    <div class="suggestions" id="suggestions"></div>
+                    <div class="work-hours">
+                        <span>Working hours</span>
+                        <select id="workStart" aria-label="Working hours start"></select>
+                        <span class="dash">&ndash;</span>
+                        <select id="workEnd" aria-label="Working hours end"></select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel addbar" aria-label="Manage cities">
+            <form class="search" id="addForm" autocomplete="off">
+                <input type="text" id="zoneInput" list="zoneList" placeholder="Add a city or time zone — Tel Aviv, Berlin, Asia/Seoul…" aria-label="Add a city or time zone">
+                <datalist id="zoneList"></datalist>
+                <button type="submit" class="primary">Add</button>
+            </form>
+            <div class="addbar-actions">
+                <button id="copyBtn" class="ghost" type="button">Copy summary</button>
+                <button id="resetBtn" class="ghost" type="button">Reset</button>
+            </div>
+        </section>
+
+        <div class="clocks" id="clocks"></div>
+        <p class="empty" id="emptyState" hidden>No cities yet — add one above, or hit Reset for the defaults.</p>
+
+        <footer class="footer">
+            <span class="legend"><i class="swatch work"></i>working hours</span>
+            <span class="legend"><i class="swatch awake"></i>awake</span>
+            <span class="legend"><i class="swatch sleep"></i>asleep</span>
+            <span class="spacer"></span>
+            <span>Everything runs locally in your browser &mdash; no server, no tracking.</span>
+        </footer>
     </div>
 
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="script.js"></script>
 </body>
 </html>

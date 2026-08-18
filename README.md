@@ -1,196 +1,76 @@
-# ⏰ Digital Clock - Multi Timezone Dashboard
+# ◷ Global Time Planner
 
-A beautiful, real-time digital clock dashboard that displays current time across multiple time zones worldwide.
+Live world clocks — plus a scrubbable timeline that tells you **which hours everyone can actually make**.
 
-## ✨ Features
+Most world-clock pages stop at "what time is it in Tokyo?". The hard question is the next one: *when can New York, London and Tokyo all take a call?* This page answers it, in the browser, with no build step and no server.
 
-- 🌍 **20+ Major Cities** - Pre-configured with major cities worldwide
-- 🔄 **Real-time Updates** - Clock updates every second
-- 🏙️ **Add Custom Timezones** - Search and add any timezone
-- 🕐 **12/24 Hour Toggle** - Switch between time formats
-- 📱 **Responsive Design** - Works on desktop, tablet, and mobile
-- 🎨 **Modern UI** - Beautiful gradient design with smooth animations
-- 📍 **Timezone Offset** - Shows UTC offset for each timezone
-- 📅 **Date & Day Display** - Shows full date and day of week
+## Features
 
-## 🚀 Getting Started
+- **Live clocks** for any IANA time zone, ticking every second, with UTC offset and DST-aware abbreviations (EDT, JST…).
+- **Time scrubber** — drag the slider or pick a date to see the same instant across every city at once. Cards switch from live to the scrubbed moment and back with one click.
+- **Overlap bar** — 24 columns, one per hour of the reference day, each filled by how many of your cities are inside working hours. Click a column to jump there.
+- **Best-window suggestions** — the longest runs where everyone is available, or the best you can do when nobody's schedule lines up. Click a chip to jump to that window.
+- **Configurable working hours** (including overnight ranges like 22:00–06:00).
+- **Day-shift badges** (`+1 day` / `−1 day`) so a 2 a.m. Wednesday in Sydney never gets mistaken for today.
+- **Per-city day strip** — 24 blocks coloured working / awake / asleep, with a marker on the current hour.
+- **Copy summary** — one click puts a paste-ready per-city breakdown of the selected moment on your clipboard.
+- **12/24-hour and light/dark**, remembered along with your city list via `localStorage`.
+- **Keyboard**: `/` focuses the search box, `n` jumps back to live.
 
-### Quick Start
+## Run it
 
-1. Clone the repository:
-```bash
-git clone https://github.com/omervilf641-boop/digital-clock.git
-cd digital-clock
-```
+Open `index.html` in a browser. That's the whole setup.
 
-2. Open `index.html` in your web browser:
-   - Simply double-click `index.html` or
-   - Drag it to your browser window
-
-3. That's it! The clock will start running immediately.
-
-### Using a Local Server (Recommended)
+For a local server (needed if your browser restricts `file://` storage):
 
 ```bash
-# Using Python 3
-python -m http.server 8000
-
-# Using Python 2
-python -m SimpleHTTPServer 8000
-
-# Using Node.js (if installed)
-npx http-server
+python3 -m http.server 8000   # then open http://localhost:8000
 ```
 
-Then open `http://localhost:8000` in your browser.
+## How to use
 
-## 🎮 How to Use
+| Action | How |
+| --- | --- |
+| Add a city | Type a name (`Tel Aviv`, `Berlin`, `Asia/Seoul`) and press Enter |
+| Remove a city | Hover the card, click `×` |
+| Pick a meeting time | Drag the slider, or click any column in the overlap bar |
+| Jump to a good window | Click one of the suggested time chips |
+| Change the reference zone | Use the "Reference zone" dropdown — the slider, date and suggestions all follow it |
+| Return to the current time | Click "Back to live" (or press `n`) |
+| Share the plan | "Copy summary" |
 
-### Default View
-The clock comes pre-loaded with 4 major cities:
-- 🗽 New York (America/New_York)
-- 🇬🇧 London (Europe/London)
-- 🗾 Tokyo (Asia/Tokyo)
-- 🦘 Sydney (Australia/Sydney)
+Search accepts city names, full IANA identifiers, and common shorthands (`nyc`, `sf`, `bangalore`, `uk`, `gmt`). Everything `Intl.supportedValuesOf('timeZone')` reports is available, with ~45 major cities given friendly names and flags.
 
-### Add a Timezone
-1. Type a city name in the search box (e.g., "Paris", "Dubai", "Singapore")
-2. Press Enter or click "Add Timezone"
-3. The new clock will appear on the grid
+## How the time math works
 
-### Remove a Timezone
-- Click the ✕ button on any clock card to remove it
+All conversions go through `Intl.DateTimeFormat`, so DST rules come from the browser's own tz database rather than hardcoded offsets:
 
-### Toggle Time Format
-- Click "🔄 Toggle 12/24 Hour" to switch between formats
-- Example: `14:30:45` ↔ `2:30:45 PM`
+- `zonedParts(ts, tz)` reads the wall-clock fields a zone shows at an instant.
+- `offsetMinutes(ts, tz)` derives the offset by comparing those fields back against UTC.
+- `zonedToTs(y, m, d, h, min, tz)` is the inverse — it finds the instant at which a zone shows a given wall clock, with a second pass so DST transitions land correctly.
 
-### Reset to Default
-- Click "🔄 Reset to Default" to restore the original 4 cities
+The overlap bar builds each column with `zonedToTs` on the reference day and then asks every city what hour it is at that instant, so a column is correct even when cities cross a DST boundary in different weeks.
 
-## 📋 Supported Timezones
+## Files
 
-The dashboard includes these cities:
-
-**Americas**
-- New York (EST/EDT)
-- Los Angeles (PST/PDT)
-- Chicago (CST/CDT)
-- Toronto (EST/EDT)
-- Mexico City (CST/CDT)
-- São Paulo (BRT)
-
-**Europe**
-- London (GMT/BST)
-- Paris (CET/CEST)
-- Berlin (CET/CEST)
-- Moscow (MSK)
-- Istanbul (EET/EEST)
-
-**Asia**
-- Dubai (GST)
-- Singapore (SGT)
-- Hong Kong (HKT)
-- Tokyo (JST)
-- Seoul (KST)
-- Bangkok (ICT)
-- Mumbai (IST)
-
-**Oceania**
-- Sydney (AEDT/AEST)
-
-## 🎨 Features Explained
-
-### Real-time Updates
-Each clock updates every second with the current time in its timezone.
-
-### UTC Offset
-Shows the difference from UTC time:
-- `UTC+9.0` for Tokyo
-- `UTC-5.0` for New York
-- `UTC+0.0` for London
-
-### Date Information
-Each clock displays:
-- Current date (e.g., "Aug 18, 2026")
-- Day of week (e.g., "Monday")
-- Time with seconds precision
-
-### Responsive Layout
-- Desktop: 3-4 clocks per row
-- Tablet: 2 clocks per row
-- Mobile: 1 clock per row
-
-## 🛠️ Technical Details
-
-### Technologies
-- **HTML5** - Semantic markup
-- **CSS3** - Gradient backgrounds, flexbox, CSS Grid
-- **JavaScript** - Intl API for timezone handling
-
-### Browser Support
-- Chrome/Chromium (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-- Mobile browsers (iOS Safari, Chrome Mobile)
-
-### File Structure
 ```
 digital-clock/
-├── index.html       # Main HTML file
-├── style.css        # Styling and layout
-├── script.js        # Clock logic and interactions
-└── README.md        # This file
+├── index.html    # markup
+├── style.css     # theming, layout, the strips
+├── script.js     # time math, planner state, rendering
+└── README.md
 ```
 
-## 🎯 Use Cases
+No dependencies, no tracking, nothing leaves the browser.
 
-- **Global Teams** - Track time across team members in different zones
-- **International Meetings** - Schedule across timezones easily
-- **Travel Planning** - Check time differences before booking flights
-- **Business Hours** - Know when offices open/close worldwide
-- **Learning** - Understand timezone differences visually
+## Ideas for later
 
-## 🐛 Troubleshooting
+- [ ] Shareable URL that encodes cities + selected moment
+- [ ] Per-city working hours instead of one global range
+- [ ] Drag to reorder cards
+- [ ] `.ics` export for the chosen slot
+- [ ] Sunrise/sunset shading on the day strip
 
-### Clock not updating?
-- Ensure JavaScript is enabled in your browser
-- Try refreshing the page
-- Check browser console for errors (F12)
+## License
 
-### Timezone not found?
-- Make sure you spelled the city name correctly
-- Check the supported timezones list above
-- Try a major city name instead
-
-### Time seems incorrect?
-- Check your system clock is set correctly
-- Verify your computer's timezone setting
-- The clock uses your device's system time
-
-## 📝 License
-
-MIT License - Feel free to use and modify!
-
-## 🤝 Contributing
-
-Want to add more timezones or features? Feel free to fork and create a pull request!
-
-### Ideas for Enhancement
-- [ ] Add 12-hour/24-hour auto-detection based on locale
-- [ ] Save favorite timezones to localStorage
-- [ ] Add alarm/reminder functionality
-- [ ] Show sunrise/sunset times
-- [ ] Add analog clock display option
-- [ ] Dark mode toggle
-- [ ] Export schedule as image
-
-## 🌟 Credits
-
-Created with ❤️ for global teams and timezone enthusiasts.
-
----
-
-**Version**: 1.0.0  
-**Last Updated**: August 18, 2026
+MIT.
