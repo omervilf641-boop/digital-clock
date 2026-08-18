@@ -34,6 +34,10 @@
                     <span>Date</span>
                     <input type="date" id="planDate">
                 </label>
+                <label class="field">
+                    <span>Length</span>
+                    <select id="duration"></select>
+                </label>
                 <div class="readout">
                     <span class="readout-time" id="planTime">--:--</span>
                     <span class="readout-zone" id="planZoneLabel">&mdash;</span>
@@ -61,11 +65,13 @@
 
         <section class="panel addbar" aria-label="Manage cities">
             <form class="search" id="addForm" autocomplete="off">
-                <input type="text" id="zoneInput" list="zoneList" placeholder="Add a city or time zone — Tel Aviv, Berlin, Asia/Seoul…" aria-label="Add a city or time zone">
+                <input type="text" id="zoneInput" list="zoneList" placeholder="Add a country or city — Kenya, Vietnam, Chile, Berlin, Asia/Seoul…" aria-label="Add a country or city">
                 <datalist id="zoneList"></datalist>
                 <button type="submit" class="primary">Add</button>
             </form>
             <div class="addbar-actions">
+                <button id="shareBtn" class="ghost" type="button" title="Copy a link that reopens this exact plan">Share link</button>
+                <button id="icsBtn" class="ghost" type="button" title="Download a calendar invite for the selected time">Calendar invite</button>
                 <button id="copyBtn" class="ghost" type="button">Copy summary</button>
                 <button id="resetBtn" class="ghost" type="button">Reset</button>
             </div>

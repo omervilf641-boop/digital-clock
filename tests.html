@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Time Planner — tests</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .app { max-width: 820px; }
+        .case { display: flex; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--panel-line); font-size: 14px; }
+        .case b { font-weight: 600; }
+        .pass { color: var(--work); }
+        .fail { color: #ff7a7a; }
+        .detail { color: var(--muted); font-size: 12px; margin-inline-start: auto; text-align: end; }
+        #summary { font-size: 18px; font-weight: 600; margin: 0 0 12px; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="topbar">
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true">◷</span>
+                <div>
+                    <h1>Time math tests</h1>
+                    <p class="tagline">Open this file in a browser — no build step, no dependencies.</p>
+                </div>
+            </div>
+        </header>
+        <section class="panel">
+            <p id="summary">Running…</p>
+            <div id="results"></div>
+        </section>
+    </div>
+
+    <!-- script.js exits early when the planner markup is absent, so only its helpers load. -->
+    <script src="script.js"></script>
+    <script>
+        const results = [];
+
+        function check(name, fn) {
+            try {
+                const detail = fn();
+                results.push({ name, ok: true, detail: detail || '' });
+            } catch (error) {
+                results.push({ name, ok: false, detail: error.message });
+            }
+        }
+
+        function eq(actual, expected, label) {
+            const a = JSON.stringify(actual);
+            const e = JSON.stringify(expected);
+            if (a !== e) throw new Error(`${label || ''} expected ${e}, got ${a}`);
+        }
+
+        function ok(condition, label) {
+            if (!condition) throw new Error(label || 'expected true');
+        }
+
+        /* ---------- offsets ---------- */
+
+        check('New York is UTC-5 in January', () => {
+            eq(offsetMinutes(Date.UTC(2026, 0, 15, 12), 'America/New_York'), -300);
+        });
+
+        check('New York is UTC-4 in July (DST)', () => {
+            eq(offsetMinutes(Date.UTC(2026, 6, 15, 12), 'America/New_York'), -240);
+        });
+
+        check('half- and quarter-hour zones', () => {
+            eq(offsetMinutes(Date.UTC(2026, 5, 1), 'Asia/Kolkata'), 330, 'Kolkata');
+            eq(offsetMinutes(Date.UTC(2026, 5, 1), 'Asia/Kathmandu'), 345, 'Kathmandu');
+            eq(offsetMinutes(Date.UTC(2026, 5, 1), 'Pacific/Marquesas'), -570, 'Marquesas');
+        });
+
+        check('formatOffset renders minutes only when needed', () => {
+            eq(formatOffset(330), 'UTC+5:30');
+            eq(formatOffset(-240), 'UTC-4');
+            eq(formatOffset(0), 'UTC+0');
+            eq(formatOffset(-570), 'UTC-9:30');
+        });
+
+        /* ---------- wall clock <-> instant ---------- */
+
+        check('zonedToTs round-trips across zones and seasons', () => {
+            const zones = ['UTC', 'America/New_York', 'America/Sao_Paulo', 'Europe/London',
+                'Europe/Berlin', 'Asia/Jerusalem', 'Asia/Kolkata', 'Asia/Tokyo',
+                'Australia/Sydney', 'Pacific/Auckland'];
+            let count = 0;
+            for (const tz of zones) {
+                for (const [month, day] of [[1, 15], [4, 20], [7, 15], [10, 20]]) {
+                    for (const [hour, minute] of [[0, 0], [9, 30], [13, 45], [23, 15]]) {
+                        const ts = zonedToTs(2026, month, day, hour, minute, tz);
+                        const p = zonedParts(ts, tz);
+                        eq([p.year, p.month, p.day, p.hour, p.minute],
+                            [2026, month, day, hour, minute], `${tz} ${month}/${day} ${hour}:${minute}`);
+                        count++;
+                    }
+                }
+            }
+            return `${count} round-trips`;
+        });
+
+        check('spring-forward gap resolves to a real instant', () => {
+            // 2026-03-08 02:30 never happens in New York — clocks jump 02:00 -> 03:00.
+            const ts = zonedToTs(2026, 3, 8, 2, 30, 'America/New_York');
+            const p = zonedParts(ts, 'America/New_York');
+            ok(Number.isFinite(ts), 'instant is finite');
+            ok(p.hour === 1 || p.hour === 3, `landed on ${p.hour}:${p.minute}, expected 1 or 3`);
+            // Re-resolving the resolved time must be stable.
+            eq(zonedToTs(p.year, p.month, p.day, p.hour, p.minute, 'America/New_York'), ts, 'stable');
+            return `resolved to ${p.hour}:${String(p.minute).padStart(2, '0')}`;
+        });
+
+        check('fall-back ambiguity picks one of the two offsets', () => {
+            // 2026-11-01 01:30 happens twice in New York.
+            const ts = zonedToTs(2026, 11, 1, 1, 30, 'America/New_York');
+            const p = zonedParts(ts, 'America/New_York');
+            eq([p.hour, p.minute], [1, 30], 'wall clock');
+            const off = offsetMinutes(ts, 'America/New_York');
+            ok(off === -240 || off === -300, `offset ${off}`);
+            return `offset ${formatOffset(off)}`;
+        });
+
+        check('hour 24 rolls into the next day', () => {
+            const ts = zonedToTs(2026, 8, 18, 24, 0, 'Asia/Jerusalem');
+            const p = zonedParts(ts, 'Asia/Jerusalem');
+            eq([p.month, p.day, p.hour], [8, 19, 0]);
+        });
+
+        /* ---------- working hours ---------- */
+
+        check('inWorkHours handles a normal day', () => {
+            state.workStart = 9;
+            state.workEnd = 17;
+            eq([8, 9, 16, 17].map(inWorkHours), [false, true, true, false]);
+        });
+
+        check('inWorkHours handles a shift that wraps midnight', () => {
+            state.workStart = 22;
+            state.workEnd = 6;
+            eq([21, 22, 23, 0, 5, 6].map(inWorkHours), [false, true, true, true, true, false]);
+            state.workStart = 9;
+            state.workEnd = 17;
+        });
+
+        check('calendarDayDelta compares calendar days', () => {
+            const a = { year: 2026, month: 8, day: 19 };
+            const b = { year: 2026, month: 8, day: 18 };
+            eq(calendarDayDelta(a, b), 1);
+            eq(calendarDayDelta(b, a), -1);
+            eq(calendarDayDelta(b, b), 0);
+            eq(calendarDayDelta({ year: 2027, month: 1, day: 1 }, { year: 2026, month: 12, day: 31 }), 1);
+        });
+
+        /* ---------- overlap ---------- */
+
+        check('overlap counts cities inside their working day', () => {
+            state.places = ['US@America/New_York', 'GB@Europe/London', 'JP@Asia/Tokyo'];
+            state.refZone = 'UTC';
+            state.workStart = 9;
+            state.workEnd = 17;
+            state.planTs = Date.UTC(2026, 6, 15, 12); // mid-July, all zones on summer time
+
+            const rows = overlapByHour();
+            eq(rows.length, 24);
+
+            const at = hour => rows[hour].count;
+            eq(at(0), 1, '00:00 UTC');    // Tokyo 09:00 ✓, London 01:00, NY 20:00
+            eq(at(3), 1, '03:00 UTC');    // Tokyo 12:00 ✓, London 04:00, NY 23:00
+            eq(at(13), 2, '13:00 UTC');   // London 14:00 ✓, NY 09:00 ✓, Tokyo 22:00
+            eq(at(21), 0, '21:00 UTC');   // NY 17:00, London 22:00, Tokyo 06:00 — nobody
+            return rows.map(r => r.count).join('');
+        });
+
+        check('bestWindows finds the longest run at peak coverage', () => {
+            state.places = ['GB@Europe/London', 'DE@Europe/Berlin'];
+            state.refZone = 'UTC';
+            state.planTs = Date.UTC(2026, 6, 15, 12);
+            const { best, windows } = bestWindows(overlapByHour());
+            eq(best, 2, 'both cities overlap');
+            ok(windows.length >= 1, 'at least one window');
+            ok(windows[0].end - windows[0].start >= 3, 'a run of at least 3 hours');
+            return `best ${best}, window ${windows[0].start}:00–${windows[0].end}:00 UTC`;
+        });
+
+        /* ---------- search ---------- */
+
+        check('the country table covers the world without duplicates', () => {
+            const countries = new Set(PLACES.map(p => p.code));
+            const ids = PLACES.map(p => p.id);
+            ok(countries.size > 200, `only ${countries.size} countries`);
+            eq(ids.length, new Set(ids).size, 'ids are unique');
+            ok(PLACES.every(p => knownZone(p.tz)), 'every zone is a real IANA id');
+            ok(PLACES.every(p => p.city && p.country), 'every place is labelled');
+            return `${countries.size} countries, ${PLACES.length} clocks`;
+        });
+
+        check('flags come from the country code', () => {
+            eq(flagOf('IL'), '\u{1F1EE}\u{1F1F1}');
+            eq(flagOf('JP'), '\u{1F1EF}\u{1F1F5}');
+            eq(flagOf('BR'), '\u{1F1E7}\u{1F1F7}');
+            ok(PLACES.every(p => [...p.flag].length === 2), 'every place has a flag');
+        });
+
+        check('resolvePlace finds countries, cities, codes and ids', () => {
+            eq(resolvePlace('Japan').tz, 'Asia/Tokyo');
+            eq(resolvePlace('vietnam').tz, 'Asia/Ho_Chi_Minh');
+            eq(resolvePlace('Kenya').country, 'Kenya');
+            eq(resolvePlace('tokyo').tz, 'Asia/Tokyo');
+            eq(resolvePlace('Asia/Tokyo').tz, 'Asia/Tokyo');
+            eq(resolvePlace('tel aviv').tz, 'Asia/Jerusalem');
+            eq(resolvePlace('nyc').tz, 'America/New_York');
+            eq(resolvePlace('IL').country, 'Israel');
+            eq(resolvePlace(''), null);
+            eq(resolvePlace('zzzznotacity'), null);
+        });
+
+        check('an exact country beats a longer city that merely starts the same', () => {
+            // "Chad" must not land on Chadron-style matches, "Niger" not Nigeria.
+            eq(resolvePlace('Chad').country, 'Chad');
+            eq(resolvePlace('Niger').country, 'Niger');
+            eq(resolvePlace('India').country, 'India');
+        });
+
+        check('every country carries its own zone, not a neighbour\u2019s', () => {
+            // tzdb groups countries that have shared rules since 1970; a country
+            // must still show its own id and city, never the group leader's.
+            const of = code => PLACES.find(p => p.code === code);
+            eq(of('DE').tz, 'Europe/Berlin', 'Germany');
+            eq(of('DK').tz, 'Europe/Copenhagen', 'Denmark');
+            eq(of('ZW').tz, 'Africa/Harare', 'Zimbabwe');
+            eq(of('ZM').tz, 'Africa/Lusaka', 'Zambia');
+            eq(of('AO').tz, 'Africa/Luanda', 'Angola');
+            eq(of('YE').tz, 'Asia/Aden', 'Yemen');
+            // Two countries on the same rules still keep separate clocks.
+            ok(of('ZW').id !== of('ZM').id, 'separate places');
+        });
+
+        check('a bare zone from an older save still resolves', () => {
+            eq(placeById('Asia/Tokyo').id, 'JP@Asia/Tokyo');
+            eq(placeById('America/New_York').id, 'US@America/New_York');
+            // A zone with no country row of its own still works, unlabelled.
+            const adhoc = placeById('America/Indiana/Vincennes');
+            eq(adhoc.tz, 'America/Indiana/Vincennes');
+            eq(adhoc.city, 'Vincennes');
+            eq(placeById('Not/AZone'), null);
+        });
+
+        /* ---------- calendar invite ---------- */
+
+        check('icsStamp is a UTC timestamp', () => {
+            eq(icsStamp(Date.UTC(2026, 7, 18, 14, 30, 0)), '20260818T143000Z');
+        });
+
+        check('icsEscape escapes the reserved characters', () => {
+            eq(icsEscape('a,b;c\\d'), 'a\\,b\\;c\\\\d');
+            eq(icsEscape('line1\nline2'), 'line1\\nline2');
+        });
+
+        check('icsFold keeps content lines short', () => {
+            const folded = icsFold('X'.repeat(200));
+            for (const line of folded.split('\r\n')) ok(line.length <= 75, `line of ${line.length}`);
+            eq(folded.split('\r\n').slice(1).every(l => l.startsWith(' ')), true, 'continuations indented');
+        });
+
+        check('buildIcs produces a well-formed event', () => {
+            state.places = ['US@America/New_York', 'JP@Asia/Tokyo'];
+            state.planTs = Date.UTC(2026, 7, 18, 14, 0);
+            state.duration = 45;
+            const ics = buildIcs();
+            ok(ics.startsWith('BEGIN:VCALENDAR'), 'starts with VCALENDAR');
+            ok(ics.trimEnd().endsWith('END:VCALENDAR'), 'ends with VCALENDAR');
+            ok(ics.includes('DTSTART:20260818T140000Z'), 'DTSTART');
+            ok(ics.includes('DTEND:20260818T144500Z'), 'DTEND respects the duration');
+            ok(ics.includes('\r\n'), 'CRLF line endings');
+        });
+
+        /* ---------- share links ---------- */
+
+        check('a share link round-trips through the hash', () => {
+            state.places = ['DE@Europe/Berlin', 'JP@Asia/Tokyo'];
+            state.refZone = 'Europe/Berlin';
+            state.workStart = 8;
+            state.workEnd = 16;
+            state.hour12 = true;
+            state.duration = 90;
+            state.live = false;
+            state.planTs = Date.UTC(2026, 7, 18, 12, 0);
+
+            const url = buildShareUrl();
+            const before = { ...state, places: [...state.places] };
+
+            // Wipe state, then rebuild it from the link alone.
+            state.places = [];
+            state.refZone = 'UTC';
+            state.workStart = 9;
+            state.workEnd = 17;
+            state.hour12 = false;
+            state.duration = 60;
+            state.live = true;
+            state.planTs = 0;
+
+            location.hash = url.slice(url.indexOf('#') + 1);
+            ok(applyHash(), 'hash applied');
+
+            eq(state.places, before.places, 'places');
+            eq(state.refZone, before.refZone, 'reference zone');
+            eq([state.workStart, state.workEnd], [before.workStart, before.workEnd], 'working hours');
+            eq(state.hour12, true, 'clock format');
+            eq(state.duration, 90, 'duration');
+            eq(state.live, false, 'scrubbed, not live');
+            eq(state.planTs, before.planTs, 'moment');
+            location.hash = '';
+        });
+
+        check('a live share link keeps the reader on live time', () => {
+            state.places = ['GB@Europe/London'];
+            state.live = true;
+            const url = buildShareUrl();
+            ok(url.includes('live=1'), 'carries live=1');
+            ok(!url.includes('&t='), 'carries no fixed moment');
+            location.hash = url.slice(url.indexOf('#') + 1);
+            state.live = false;
+            applyHash();
+            eq(state.live, false, 'applyHash leaves live untouched (init decides)');
+            location.hash = '';
+        });
+
+        check('a malformed hash is ignored', () => {
+            location.hash = 'z=Not/AZone&ref=alsojunk';
+            eq(applyHash(), false);
+            location.hash = '';
+        });
+
+        /* ---------- report ---------- */
+
+        const passed = results.filter(r => r.ok).length;
+        const summary = document.getElementById('summary');
+        summary.textContent = `${passed}/${results.length} passing`;
+        summary.className = passed === results.length ? 'pass' : 'fail';
+
+        const box = document.getElementById('results');
+        for (const r of results) {
+            const row = document.createElement('div');
+            row.className = 'case';
+            row.innerHTML = `<b class="${r.ok ? 'pass' : 'fail'}">${r.ok ? '✓' : '✕'}</b>
+                             <span>${r.name}</span>
+                             <span class="detail"></span>`;
+            row.querySelector('.detail').textContent = r.detail;
+            box.appendChild(row);
+        }
+
+        window.__testResults = { passed, total: results.length, results };
+    </script>
+</body>
+</html>

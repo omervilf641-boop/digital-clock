@@ -1,75 +1,142 @@
 # ◷ Global Time Planner
 
-Live world clocks — plus a scrubbable timeline that tells you **which hours everyone can actually make**.
+Live world clocks — plus a timeline that answers the question a world clock never does:
+**when can all of us actually meet?**
 
-Most world-clock pages stop at "what time is it in Tokyo?". The hard question is the next one: *when can New York, London and Tokyo all take a call?* This page answers it, in the browser, with no build step and no server.
+Scrub the slider and every clock moves together. The bar above them shows, hour by hour, how many
+of your places are inside their working day, and the chips underneath jump straight to the longest
+window where the most people are available.
 
-## Features
+**Every country is in there** — 247 of them, 273 clocks, straight from the IANA time zone database,
+each with its flag and its own zone. Type a country, a city, or an ISO code.
 
-- **Live clocks** for any IANA time zone, ticking every second, with UTC offset and DST-aware abbreviations (EDT, JST…).
-- **Time scrubber** — drag the slider or pick a date to see the same instant across every city at once. Cards switch from live to the scrubbed moment and back with one click.
-- **Overlap bar** — 24 columns, one per hour of the reference day, each filled by how many of your cities are inside working hours. Click a column to jump there.
-- **Best-window suggestions** — the longest runs where everyone is available, or the best you can do when nobody's schedule lines up. Click a chip to jump to that window.
-- **Configurable working hours** (including overnight ranges like 22:00–06:00).
-- **Day-shift badges** (`+1 day` / `−1 day`) so a 2 a.m. Wednesday in Sydney never gets mistaken for today.
-- **Per-city day strip** — 24 blocks coloured working / awake / asleep, with a marker on the current hour.
-- **Copy summary** — one click puts a paste-ready per-city breakdown of the selected moment on your clipboard.
-- **12/24-hour and light/dark**, remembered along with your city list via `localStorage`.
-- **Keyboard**: `/` focuses the search box, `n` jumps back to live.
+No build step, no dependencies, no server. One HTML file, one stylesheet, one script.
 
-## Run it
+---
 
-Open `index.html` in a browser. That's the whole setup.
-
-For a local server (needed if your browser restricts `file://` storage):
+## Quick start
 
 ```bash
-python3 -m http.server 8000   # then open http://localhost:8000
+git clone https://github.com/omervilf641-boop/digital-clock.git
+cd digital-clock
+open index.html          # or: python3 -m http.server 8000
 ```
 
-## How to use
+Hosting it on GitHub Pages works as-is: Settings → Pages → deploy from the default branch, root folder.
 
-| Action | How |
-| --- | --- |
-| Add a city | Type a name (`Tel Aviv`, `Berlin`, `Asia/Seoul`) and press Enter |
-| Remove a city | Hover the card, click `×` |
-| Pick a meeting time | Drag the slider, or click any column in the overlap bar |
-| Jump to a good window | Click one of the suggested time chips |
-| Change the reference zone | Use the "Reference zone" dropdown — the slider, date and suggestions all follow it |
-| Return to the current time | Click "Back to live" (or press `n`) |
-| Share the plan | "Copy summary" |
+---
 
-Search accepts city names, full IANA identifiers, and common shorthands (`nyc`, `sf`, `bangalore`, `uk`, `gmt`). Everything `Intl.supportedValuesOf('timeZone')` reports is available, with ~45 major cities given friendly names and flags.
+## What it does
 
-## How the time math works
+| | |
+|---|---|
+| **Every country** | 247 countries and 273 clocks, generated from the IANA tz database — flag, country, city and zone id for each. Search by country ("Kenya"), city ("Nairobi"), ISO code ("KE") or zone id ("Africa/Nairobi"). |
+| **Live clocks** | Every place ticks in real time, with date, UTC offset and the local abbreviation (EDT, JST…) when there is a meaningful one. |
+| **Scrubbable timeline** | Drag the slider (or pick a date) and every clock shows that moment instead of now. "Back to live" returns to real time. |
+| **Overlap bar** | 24 columns for the reference day. Column height = how many places are inside working hours. Click a column to jump to it. |
+| **Best-window chips** | The longest runs at the best achievable coverage — "everyone is free 16:00–17:00", or the honest "best possible: 3/4 cities". |
+| **Working hours** | Set once, applied to every place. A shift that wraps midnight (22:00–06:00) works too. |
+| **Day strip per clock** | A 24-hour bar under each clock: green = working, amber = awake, grey = asleep, with a marker on the shown hour. |
+| **Share link** | Copies a URL that reopens the exact plan — same places, same moment, same working hours — for whoever you send it to. |
+| **Calendar invite** | Downloads a `.ics` for the selected moment and length, with every city's local time in the description. |
+| **Copy summary** | A plain-text block for Slack or email: every place, its local time and whether that lands outside their day. |
+| **12/24 hour, light/dark** | The theme follows your OS on a first visit and your toggle after that. Both remembered, along with your city list. |
 
-All conversions go through `Intl.DateTimeFormat`, so DST rules come from the browser's own tz database rather than hardcoded offsets:
+Everything is stored in `localStorage` on your own machine. Nothing is sent anywhere.
 
-- `zonedParts(ts, tz)` reads the wall-clock fields a zone shows at an instant.
-- `offsetMinutes(ts, tz)` derives the offset by comparing those fields back against UTC.
-- `zonedToTs(y, m, d, h, min, tz)` is the inverse — it finds the instant at which a zone shows a given wall clock, with a second pass so DST transitions land correctly.
+### Keyboard
 
-The overlap bar builds each column with `zonedToTs` on the reference day and then asks every city what hour it is at that instant, so a column is correct even when cities cross a DST boundary in different weeks.
+| Key | Action |
+|---|---|
+| `/` | focus the city search |
+| `N` | back to live time |
+| `←` `→` | move the timeline in 15-minute steps (while the slider is focused) |
+
+---
+
+## How to read the overlap bar
+
+```
+Best possible — 3/4 cities:   [ 16:00 – 17:00 ]
+```
+
+The bar is drawn in the **reference zone** — the dropdown on the left, defaulting to your own.
+A full-height column means every city is inside its working day at that hour; a half-height column
+means half of them are. When no hour works for everyone, the app says so and offers the best
+compromise rather than pretending.
+
+## Share links
+
+`Share link` produces something like:
+
+```
+https://…/index.html#z=IL%40Asia%2FJerusalem%2CUS%40America%2FNew_York&ref=Asia%2FJerusalem&w=9-17&f=24&d=60&t=1787050800
+```
+
+The link carries the plan (places, reference zone, moment, working hours, clock format, meeting
+length) — not the reader's preferences: their theme stays theirs. Opening a link shows the shared
+plan without overwriting the reader's own saved places; the moment they change something, it
+becomes theirs. Links from before countries existed, which carried bare zone ids, still open.
+
+---
+
+## Where the countries come from
+
+The country list is generated from the tz database shipped with the system (`zone.tab` and
+`iso3166.tab`), not hand-written. Each country gets **its own** zone id, which matters more than it
+sounds: tzdb groups countries whose rules have matched since 1970, so a naive read files Zimbabwe
+under Mozambique's zone, Angola under Nigeria's, and — as the tests caught — Germany under
+Switzerland's. Every row here carries the country's own id and its own city.
+
+A handful of countries are wide enough that one clock would hide a real difference; those carry
+several, each a distinct offset: the US, Canada, Russia, Brazil, Australia, Mexico, Indonesia,
+Kazakhstan, Chile, Portugal, Spain, Ecuador and DR Congo.
+
+## Time zone handling
+
+All conversion goes through the `Intl` API and the IANA database in the browser, so DST
+transitions, half-hour zones (India, +5:30), quarter-hour zones (Nepal, +5:45) and
+rule changes are handled by the platform rather than by hand-written offset tables.
+
+Two cases the code handles explicitly:
+
+- **Spring forward** — 02:30 on a US spring-forward day does not exist. `zonedToTs` resolves it to
+  a real instant and stays stable if you resolve it again.
+- **Fall back** — 01:30 happens twice on a US fall-back day. The earlier of the two is chosen.
+
+## Tests
+
+Open **`tests.html`** in a browser. It loads `script.js` (which no-ops without the planner markup)
+and asserts the time math, overlap logic, country table, calendar output and share-link
+round-trip — 26 cases, including DST edges, 160 wall-clock round-trips across ten zones and four
+seasons, and a check that no country borrows a neighbour's zone.
+
+Serving it works too — `python3 -m http.server 8000`, then open
+`http://localhost:8000/tests.html`. The page also exposes `window.__testResults`, so a headless
+runner can read the pass/fail count without scraping the DOM.
+
+---
 
 ## Files
 
 ```
-digital-clock/
-├── index.html    # markup
-├── style.css     # theming, layout, the strips
-├── script.js     # time math, planner state, rendering
-└── README.md
+index.html    markup for the planner
+style.css     theming (light/dark via CSS variables), layout, the strips
+script.js     the country table, time math, overlap analysis, rendering, sharing, .ics
+tests.html    browser-run assertions for everything in script.js that isn't DOM
 ```
 
-No dependencies, no tracking, nothing leaves the browser.
+## Browser support
 
-## Ideas for later
+Chrome, Firefox, Safari and Edge, current versions, desktop and mobile. Search also accepts any
+zone id the browser knows via `Intl.supportedValuesOf('timeZone')`, on top of the 273 built in.
 
-- [ ] Shareable URL that encodes cities + selected moment
-- [ ] Per-city working hours instead of one global range
-- [ ] Drag to reorder cards
-- [ ] `.ics` export for the chosen slot
-- [ ] Sunrise/sunset shading on the day strip
+## Ideas not built yet
+
+- [ ] Per-place working hours (a 10–18 country next to an 8–16 one)
+- [ ] Drag to reorder the clocks
+- [ ] Sunrise/sunset shading instead of fixed sleep hours
+- [ ] A "who's excluded" list next to each suggested window
 
 ## License
 
