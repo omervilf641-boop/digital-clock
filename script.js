@@ -13,56 +13,268 @@ const SLOTS_PER_DAY = (24 * 60) / SLOT_MINUTES; // 96
 const DEVICE_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 const DURATIONS = [15, 30, 45, 60, 90, 120];
 
-// A short curated list keeps search friendly; the full IANA list is added on top.
-const CURATED = [
-    ['America/Los_Angeles', 'Los Angeles', '🌴'],
-    ['America/Denver', 'Denver', '🏔️'],
-    ['America/Chicago', 'Chicago', '🌆'],
-    ['America/New_York', 'New York', '🗽'],
-    ['America/Toronto', 'Toronto', '🍁'],
-    ['America/Mexico_City', 'Mexico City', '🌮'],
-    ['America/Bogota', 'Bogotá', '☕'],
-    ['America/Sao_Paulo', 'São Paulo', '🇧🇷'],
-    ['America/Argentina/Buenos_Aires', 'Buenos Aires', '💃'],
-    ['Atlantic/Reykjavik', 'Reykjavík', '🌋'],
-    ['Europe/Dublin', 'Dublin', '☘️'],
-    ['Europe/London', 'London', '🇬🇧'],
-    ['Europe/Lisbon', 'Lisbon', '🐟'],
-    ['Europe/Madrid', 'Madrid', '🇪🇸'],
-    ['Europe/Paris', 'Paris', '🗼'],
-    ['Europe/Amsterdam', 'Amsterdam', '🚲'],
-    ['Europe/Berlin', 'Berlin', '🇩🇪'],
-    ['Europe/Zurich', 'Zurich', '🏔️'],
-    ['Europe/Stockholm', 'Stockholm', '🇸🇪'],
-    ['Europe/Warsaw', 'Warsaw', '🇵🇱'],
-    ['Europe/Athens', 'Athens', '🏛️'],
-    ['Europe/Istanbul', 'Istanbul', '🕌'],
-    ['Europe/Kyiv', 'Kyiv', '🌻'],
-    ['Europe/Moscow', 'Moscow', '🇷🇺'],
-    ['Africa/Lagos', 'Lagos', '🇳🇬'],
-    ['Africa/Cairo', 'Cairo', '🏜️'],
-    ['Africa/Nairobi', 'Nairobi', '🦁'],
-    ['Africa/Johannesburg', 'Johannesburg', '🇿🇦'],
-    ['Asia/Jerusalem', 'Tel Aviv', '🇮🇱'],
-    ['Asia/Dubai', 'Dubai', '🏙️'],
-    ['Asia/Karachi', 'Karachi', '🇵🇰'],
-    ['Asia/Kolkata', 'Bengaluru', '🇮🇳'],
-    ['Asia/Dhaka', 'Dhaka', '🇧🇩'],
-    ['Asia/Bangkok', 'Bangkok', '🏝️'],
-    ['Asia/Jakarta', 'Jakarta', '🇮🇩'],
-    ['Asia/Singapore', 'Singapore', '🇸🇬'],
-    ['Asia/Hong_Kong', 'Hong Kong', '🏮'],
-    ['Asia/Shanghai', 'Shanghai', '🇨🇳'],
-    ['Asia/Seoul', 'Seoul', '🇰🇷'],
-    ['Asia/Tokyo', 'Tokyo', '🗾'],
-    ['Australia/Perth', 'Perth', '🦈'],
-    ['Australia/Sydney', 'Sydney', '🦘'],
-    ['Pacific/Auckland', 'Auckland', '🥝'],
-    ['Pacific/Honolulu', 'Honolulu', '🌺'],
-    ['UTC', 'UTC', '🌐']
+/* ------------------------------------------------------------------ *
+ * Places
+ *
+ * One row per country, generated from the IANA tz database:
+ *   "<code> <country>|<zone>[=<label>]|<zone>…"
+ * Most countries need a single clock. Countries wide enough that one clock
+ * would hide a real difference carry several, each a distinct offset.
+ * Zones come from tzdb's per-country table, so every country carries its own
+ * zone id and its own city — Zimbabwe is Africa/Harare, not the Mozambican
+ * zone it happens to share rules with.
+ * ------------------------------------------------------------------ */
+
+const COUNTRY_ZONES = [
+    'AF Afghanistan|Asia/Kabul',
+    'AL Albania|Europe/Tirane',
+    'DZ Algeria|Africa/Algiers',
+    'AS American Samoa|Pacific/Pago_Pago',
+    'AD Andorra|Europe/Andorra',
+    'AO Angola|Africa/Luanda',
+    'AI Anguilla|America/Anguilla',
+    'AQ Antarctica|Antarctica/McMurdo',
+    'AG Antigua & Barbuda|America/Antigua',
+    'AR Argentina|America/Argentina/Buenos_Aires',
+    'AM Armenia|Asia/Yerevan',
+    'AW Aruba|America/Aruba',
+    'AU Australia|Australia/Sydney|Australia/Adelaide|Australia/Brisbane|Australia/Perth',
+    'AT Austria|Europe/Vienna',
+    'AZ Azerbaijan|Asia/Baku',
+    'BS Bahamas|America/Nassau',
+    'BH Bahrain|Asia/Bahrain',
+    'BD Bangladesh|Asia/Dhaka',
+    'BB Barbados|America/Barbados',
+    'BY Belarus|Europe/Minsk',
+    'BE Belgium|Europe/Brussels',
+    'BZ Belize|America/Belize',
+    'BJ Benin|Africa/Porto-Novo',
+    'BM Bermuda|Atlantic/Bermuda',
+    'BT Bhutan|Asia/Thimphu',
+    'BO Bolivia|America/La_Paz',
+    'BA Bosnia & Herzegovina|Europe/Sarajevo',
+    'BW Botswana|Africa/Gaborone',
+    'BR Brazil|America/Sao_Paulo|America/Manaus',
+    'IO British Indian Ocean Territory|Indian/Chagos',
+    'VG British Virgin Islands|America/Tortola',
+    'BN Brunei|Asia/Brunei',
+    'BG Bulgaria|Europe/Sofia',
+    'BF Burkina Faso|Africa/Ouagadougou',
+    'BI Burundi|Africa/Bujumbura',
+    'KH Cambodia|Asia/Phnom_Penh',
+    'CM Cameroon|Africa/Douala',
+    'CA Canada|America/Toronto|America/Winnipeg|America/Edmonton|America/Vancouver|America/Halifax|America/St_Johns',
+    'CV Cape Verde|Atlantic/Cape_Verde',
+    'BQ Caribbean NL|America/Kralendijk',
+    'KY Cayman Islands|America/Cayman',
+    'CF Central African Rep.|Africa/Bangui',
+    'TD Chad|Africa/Ndjamena',
+    'CL Chile|America/Santiago|Pacific/Easter',
+    'CN China|Asia/Shanghai',
+    'CX Christmas Island|Indian/Christmas',
+    'CC Cocos (Keeling) Islands|Indian/Cocos',
+    'CO Colombia|America/Bogota',
+    'KM Comoros|Indian/Comoro',
+    'CK Cook Islands|Pacific/Rarotonga',
+    'CR Costa Rica|America/Costa_Rica',
+    'HR Croatia|Europe/Zagreb',
+    'CU Cuba|America/Havana',
+    'CW Curaçao|America/Curacao',
+    'CY Cyprus|Asia/Nicosia',
+    'CZ Czech Republic|Europe/Prague',
+    'CI Côte d\'Ivoire|Africa/Abidjan',
+    'CD DR Congo|Africa/Kinshasa|Africa/Lubumbashi',
+    'DK Denmark|Europe/Copenhagen',
+    'DJ Djibouti|Africa/Djibouti',
+    'DO Dominican Republic|America/Santo_Domingo',
+    'DM Dominica|America/Dominica',
+    'TL East Timor|Asia/Dili',
+    'EC Ecuador|America/Guayaquil|Pacific/Galapagos',
+    'EG Egypt|Africa/Cairo',
+    'SV El Salvador|America/El_Salvador',
+    'GQ Equatorial Guinea|Africa/Malabo',
+    'ER Eritrea|Africa/Asmara',
+    'EE Estonia|Europe/Tallinn',
+    'SZ Eswatini|Africa/Mbabane',
+    'ET Ethiopia|Africa/Addis_Ababa',
+    'FK Falkland Islands|Atlantic/Stanley',
+    'FO Faroe Islands|Atlantic/Faroe',
+    'FJ Fiji|Pacific/Fiji',
+    'FI Finland|Europe/Helsinki',
+    'FR France|Europe/Paris',
+    'GF French Guiana|America/Cayenne',
+    'PF French Polynesia|Pacific/Tahiti',
+    'TF French S. Terr.|Indian/Kerguelen',
+    'GA Gabon|Africa/Libreville',
+    'GM Gambia|Africa/Banjul',
+    'GE Georgia|Asia/Tbilisi',
+    'DE Germany|Europe/Berlin',
+    'GH Ghana|Africa/Accra',
+    'GI Gibraltar|Europe/Gibraltar',
+    'GR Greece|Europe/Athens',
+    'GL Greenland|America/Nuuk',
+    'GD Grenada|America/Grenada',
+    'GP Guadeloupe|America/Guadeloupe',
+    'GU Guam|Pacific/Guam',
+    'GT Guatemala|America/Guatemala',
+    'GG Guernsey|Europe/Guernsey',
+    'GW Guinea-Bissau|Africa/Bissau',
+    'GN Guinea|Africa/Conakry',
+    'GY Guyana|America/Guyana',
+    'HT Haiti|America/Port-au-Prince',
+    'HN Honduras|America/Tegucigalpa',
+    'HK Hong Kong|Asia/Hong_Kong',
+    'HU Hungary|Europe/Budapest',
+    'IS Iceland|Atlantic/Reykjavik',
+    'IN India|Asia/Kolkata',
+    'ID Indonesia|Asia/Jakarta|Asia/Makassar|Asia/Jayapura',
+    'IR Iran|Asia/Tehran',
+    'IQ Iraq|Asia/Baghdad',
+    'IE Ireland|Europe/Dublin',
+    'IM Isle of Man|Europe/Isle_of_Man',
+    'IL Israel|Asia/Jerusalem',
+    'IT Italy|Europe/Rome',
+    'JM Jamaica|America/Jamaica',
+    'JP Japan|Asia/Tokyo',
+    'JE Jersey|Europe/Jersey',
+    'JO Jordan|Asia/Amman',
+    'KZ Kazakhstan|Asia/Almaty|Asia/Aqtobe',
+    'KE Kenya|Africa/Nairobi',
+    'KI Kiribati|Pacific/Tarawa',
+    'KW Kuwait|Asia/Kuwait',
+    'KG Kyrgyzstan|Asia/Bishkek',
+    'LA Laos|Asia/Vientiane',
+    'LV Latvia|Europe/Riga',
+    'LB Lebanon|Asia/Beirut',
+    'LS Lesotho|Africa/Maseru',
+    'LR Liberia|Africa/Monrovia',
+    'LY Libya|Africa/Tripoli',
+    'LI Liechtenstein|Europe/Vaduz',
+    'LT Lithuania|Europe/Vilnius',
+    'LU Luxembourg|Europe/Luxembourg',
+    'MO Macau|Asia/Macau',
+    'MG Madagascar|Indian/Antananarivo',
+    'MW Malawi|Africa/Blantyre',
+    'MY Malaysia|Asia/Kuala_Lumpur',
+    'MV Maldives|Indian/Maldives',
+    'ML Mali|Africa/Bamako',
+    'MT Malta|Europe/Malta',
+    'MH Marshall Islands|Pacific/Majuro',
+    'MQ Martinique|America/Martinique',
+    'MR Mauritania|Africa/Nouakchott',
+    'MU Mauritius|Indian/Mauritius',
+    'YT Mayotte|Indian/Mayotte',
+    'MX Mexico|America/Mexico_City|America/Tijuana',
+    'FM Micronesia|Pacific/Chuuk',
+    'MD Moldova|Europe/Chisinau',
+    'MC Monaco|Europe/Monaco',
+    'MN Mongolia|Asia/Ulaanbaatar',
+    'ME Montenegro|Europe/Podgorica',
+    'MS Montserrat|America/Montserrat',
+    'MA Morocco|Africa/Casablanca',
+    'MZ Mozambique|Africa/Maputo',
+    'MM Myanmar|Asia/Yangon',
+    'NA Namibia|Africa/Windhoek',
+    'NR Nauru|Pacific/Nauru',
+    'NP Nepal|Asia/Kathmandu',
+    'NL Netherlands|Europe/Amsterdam',
+    'NC New Caledonia|Pacific/Noumea',
+    'NZ New Zealand|Pacific/Auckland',
+    'NI Nicaragua|America/Managua',
+    'NG Nigeria|Africa/Lagos',
+    'NE Niger|Africa/Niamey',
+    'NU Niue|Pacific/Niue',
+    'NF Norfolk Island|Pacific/Norfolk',
+    'KP North Korea|Asia/Pyongyang',
+    'MK North Macedonia|Europe/Skopje',
+    'MP Northern Mariana Islands|Pacific/Saipan',
+    'NO Norway|Europe/Oslo',
+    'OM Oman|Asia/Muscat',
+    'PK Pakistan|Asia/Karachi',
+    'PW Palau|Pacific/Palau',
+    'PS Palestine|Asia/Gaza',
+    'PA Panama|America/Panama',
+    'PG Papua New Guinea|Pacific/Port_Moresby',
+    'PY Paraguay|America/Asuncion',
+    'PE Peru|America/Lima',
+    'PH Philippines|Asia/Manila',
+    'PN Pitcairn|Pacific/Pitcairn',
+    'PL Poland|Europe/Warsaw',
+    'PT Portugal|Europe/Lisbon|Atlantic/Azores',
+    'PR Puerto Rico|America/Puerto_Rico',
+    'QA Qatar|Asia/Qatar',
+    'CG Republic of the Congo|Africa/Brazzaville',
+    'RO Romania|Europe/Bucharest',
+    'RU Russia|Europe/Moscow|Asia/Yekaterinburg|Asia/Novosibirsk|Asia/Vladivostok',
+    'RW Rwanda|Africa/Kigali',
+    'RE Réunion|Indian/Reunion',
+    'MF Saint Martin|America/Marigot',
+    'WS Samoa|Pacific/Apia',
+    'SM San Marino|Europe/San_Marino',
+    'ST Sao Tome & Principe|Africa/Sao_Tome',
+    'SA Saudi Arabia|Asia/Riyadh',
+    'SN Senegal|Africa/Dakar',
+    'RS Serbia|Europe/Belgrade',
+    'SC Seychelles|Indian/Mahe',
+    'SL Sierra Leone|Africa/Freetown',
+    'SG Singapore|Asia/Singapore',
+    'SX Sint Maarten|America/Lower_Princes',
+    'SK Slovakia|Europe/Bratislava',
+    'SI Slovenia|Europe/Ljubljana',
+    'SB Solomon Islands|Pacific/Guadalcanal',
+    'SO Somalia|Africa/Mogadishu',
+    'ZA South Africa|Africa/Johannesburg',
+    'GS South Georgia & the South Sandwich Islands|Atlantic/South_Georgia',
+    'KR South Korea|Asia/Seoul',
+    'SS South Sudan|Africa/Juba',
+    'ES Spain|Europe/Madrid|Atlantic/Canary',
+    'LK Sri Lanka|Asia/Colombo',
+    'BL St Barthelemy|America/St_Barthelemy',
+    'SH St Helena|Atlantic/St_Helena',
+    'KN St Kitts & Nevis|America/St_Kitts',
+    'LC St Lucia|America/St_Lucia',
+    'PM St Pierre & Miquelon|America/Miquelon',
+    'VC St Vincent|America/St_Vincent',
+    'SD Sudan|Africa/Khartoum',
+    'SR Suriname|America/Paramaribo',
+    'SJ Svalbard & Jan Mayen|Arctic/Longyearbyen',
+    'SE Sweden|Europe/Stockholm',
+    'CH Switzerland|Europe/Zurich',
+    'SY Syria|Asia/Damascus',
+    'TW Taiwan|Asia/Taipei',
+    'TJ Tajikistan|Asia/Dushanbe',
+    'TZ Tanzania|Africa/Dar_es_Salaam',
+    'TH Thailand|Asia/Bangkok',
+    'TG Togo|Africa/Lome',
+    'TK Tokelau|Pacific/Fakaofo',
+    'TO Tonga|Pacific/Tongatapu',
+    'TT Trinidad & Tobago|America/Port_of_Spain',
+    'TN Tunisia|Africa/Tunis',
+    'TR Turkey|Europe/Istanbul',
+    'TM Turkmenistan|Asia/Ashgabat',
+    'TC Turks & Caicos Is|America/Grand_Turk',
+    'TV Tuvalu|Pacific/Funafuti',
+    'VI US Virgin Islands|America/St_Thomas',
+    'UM US minor outlying islands|Pacific/Midway',
+    'UG Uganda|Africa/Kampala',
+    'UA Ukraine|Europe/Simferopol',
+    'AE United Arab Emirates|Asia/Dubai',
+    'GB United Kingdom|Europe/London',
+    'US United States|America/New_York|America/Chicago|America/Denver|America/Los_Angeles|America/Anchorage|Pacific/Honolulu',
+    'UY Uruguay|America/Montevideo',
+    'UZ Uzbekistan|Asia/Samarkand',
+    'VU Vanuatu|Pacific/Efate',
+    'VA Vatican City|Europe/Vatican',
+    'VE Venezuela|America/Caracas',
+    'VN Vietnam|Asia/Ho_Chi_Minh=Ho Chi Minh City',
+    'WF Wallis & Futuna|Pacific/Wallis',
+    'EH Western Sahara|Africa/El_Aaiun',
+    'YE Yemen|Asia/Aden',
+    'ZM Zambia|Africa/Lusaka',
+    'ZW Zimbabwe|Africa/Harare',
+    'AX Åland Islands|Europe/Mariehamn',
 ];
 
-// Extra spellings people actually type.
 const ALIASES = {
     'tel aviv': 'Asia/Jerusalem', 'israel': 'Asia/Jerusalem', 'jerusalem': 'Asia/Jerusalem',
     'nyc': 'America/New_York', 'new york city': 'America/New_York',
@@ -76,8 +288,36 @@ const ALIASES = {
     'gmt': 'UTC', 'utc': 'UTC'
 };
 
-const EMOJI = Object.fromEntries(CURATED.map(([tz, , emoji]) => [tz, emoji]));
-const NICE_NAME = Object.fromEntries(CURATED.map(([tz, name]) => [tz, name]));
+/** Regional-indicator pair — "IL" becomes the Israeli flag, for all 247. */
+function flagOf(code) {
+    return String.fromCodePoint(...[...code].map(c => 0x1f1e6 + c.charCodeAt(0) - 65));
+}
+
+/** Parse the table once into the places the app actually works with. */
+function buildPlaces() {
+    const places = [];
+    for (const row of COUNTRY_ZONES) {
+        const [head, ...zones] = row.split('|');
+        const code = head.slice(0, 2);
+        const country = head.slice(3);
+        for (const entry of zones) {
+            const [tz, label] = entry.split('=');
+            if (!knownZone(tz)) continue;   // an old browser's tzdb may lag ours
+            places.push({
+                id: code + '@' + tz,
+                tz,
+                code,
+                country,
+                city: label || tz.split('/').pop().replace(/_/g, ' '),
+                flag: flagOf(code)
+            });
+        }
+    }
+    return places;
+}
+
+const PLACES = buildPlaces();
+const PLACE_BY_ID = new Map(PLACES.map(p => [p.id, p]));
 
 /** First visit follows the reader's OS setting; after that their toggle wins. */
 function prefersLight() {
@@ -89,7 +329,7 @@ function prefersLight() {
  * ------------------------------------------------------------------ */
 
 const state = {
-    zones: [],
+    places: [],   // place ids, e.g. 'IL@Asia/Jerusalem'
     hour12: false,
     theme: prefersLight() ? 'light' : 'dark',
     live: true,
@@ -179,19 +419,37 @@ function formatDate(ts, tz) {
     }).format(ts);
 }
 
+/* ------------------------------------------------------------------ *
+ * Looking places up
+ * ------------------------------------------------------------------ */
+
+/** A zone with no country row of its own — still usable, just unlabelled. */
+function adhocPlace(tz) {
+    return {
+        id: '@' + tz,
+        tz,
+        code: '',
+        country: tz.includes('/') ? tz.split('/')[0].replace(/_/g, ' ') : '',
+        city: tz.split('/').pop().replace(/_/g, ' '),
+        flag: '\u{1f552}'
+    };
+}
+
+/** The place a saved id, a share link or a bare zone refers to. */
+function placeById(id) {
+    const known = PLACE_BY_ID.get(id);
+    if (known) return known;
+
+    // Links and saved state from before countries existed hold a bare zone.
+    const tz = id.includes('@') ? id.slice(id.indexOf('@') + 1) : id;
+    if (!knownZone(tz)) return null;
+    return PLACES.find(p => p.tz === tz) || adhocPlace(tz);
+}
+
+/** How a zone is named when it stands alone (the reference-zone menu). */
 function zoneLabel(tz) {
-    if (NICE_NAME[tz]) return NICE_NAME[tz];
-    const tail = tz.split('/').pop() || tz;
-    return tail.replace(/_/g, ' ');
-}
-
-function zoneRegion(tz) {
-    const head = tz.split('/')[0];
-    return tz.includes('/') ? head.replace(/_/g, ' ') : '';
-}
-
-function zoneEmoji(tz) {
-    return EMOJI[tz] || '🕘';
+    const place = PLACES.find(p => p.tz === tz);
+    return place ? place.city : tz.split('/').pop().replace(/_/g, ' ');
 }
 
 /* ------------------------------------------------------------------ *
@@ -222,15 +480,16 @@ function knownZone(tz) {
     }
 }
 
-function defaultZones() {
-    const wanted = [DEVICE_TZ, 'America/New_York', 'Europe/London', 'Asia/Tokyo'];
-    return [...new Set(wanted)].filter(knownZone);
+function defaultPlaces() {
+    const here = PLACES.find(p => p.tz === DEVICE_TZ) || adhocPlace(DEVICE_TZ);
+    const wanted = [here.id, 'US@America/New_York', 'GB@Europe/London', 'JP@Asia/Tokyo'];
+    return [...new Set(wanted)].filter(placeById);
 }
 
 function save() {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            zones: state.zones, hour12: state.hour12, theme: state.theme,
+            places: state.places, hour12: state.hour12, theme: state.theme,
             refZone: state.refZone, workStart: state.workStart, workEnd: state.workEnd,
             duration: state.duration
         }));
@@ -247,11 +506,14 @@ function load() {
         saved = null;
     }
     if (!saved) {
-        state.zones = defaultZones();
+        state.places = defaultPlaces();
         return;
     }
-    state.zones = Array.isArray(saved.zones) ? saved.zones.filter(knownZone) : defaultZones();
-    if (!state.zones.length) state.zones = defaultZones();
+    // saved.zones is the pre-countries format: bare IANA ids.
+    const stored = Array.isArray(saved.places) ? saved.places
+        : Array.isArray(saved.zones) ? saved.zones : [];
+    state.places = stored.map(id => placeById(id)).filter(Boolean).map(p => p.id);
+    if (!state.places.length) state.places = defaultPlaces();
     state.hour12 = !!saved.hour12;
     if (saved.theme === 'light' || saved.theme === 'dark') state.theme = saved.theme;
     state.refZone = knownZone(saved.refZone) ? saved.refZone : DEVICE_TZ;
@@ -279,7 +541,7 @@ function replaceUrl(url) {
 
 function buildShareUrl() {
     const params = new URLSearchParams();
-    params.set('z', state.zones.join(','));
+    params.set('z', state.places.join(','));
     params.set('ref', refTz());
     params.set('w', `${state.workStart}-${state.workEnd}`);
     params.set('f', state.hour12 ? '12' : '24');
@@ -295,9 +557,12 @@ function applyHash() {
     if (!raw) return false;
 
     const params = new URLSearchParams(raw);
-    const zones = (params.get('z') || '').split(',').map(s => s.trim()).filter(knownZone);
-    if (!zones.length) return false;
-    state.zones = zones;
+    const shared = (params.get('z') || '').split(',')
+        .map(id => placeById(id.trim()))
+        .filter(Boolean)
+        .map(p => p.id);
+    if (!shared.length) return false;
+    state.places = shared;
 
     const ref = params.get('ref');
     state.refZone = knownZone(ref) ? ref : DEVICE_TZ;
@@ -329,6 +594,7 @@ function applyHash() {
  * Zone search
  * ------------------------------------------------------------------ */
 
+/** Every zone the browser knows, so power users can type an IANA id. */
 function allZones() {
     let list = [];
     if (typeof Intl.supportedValuesOf === 'function') {
@@ -338,36 +604,54 @@ function allZones() {
             list = [];
         }
     }
-    if (!list.length) list = CURATED.map(([tz]) => tz);
-    return [...new Set([...CURATED.map(([tz]) => tz), ...list])].filter(knownZone);
+    return [...new Set([...PLACES.map(p => p.tz), ...list])].filter(knownZone);
 }
 
-function resolveQuery(raw) {
+/**
+ * Find what someone meant. Countries, cities, ISO codes and IANA ids all
+ * work, exact matches beat prefixes, and prefixes beat "contains" — so
+ * "Chad" is the country, not Chadron, and "IL" is Israel, not Illinois.
+ */
+function resolvePlace(raw) {
     const q = raw.trim().toLowerCase();
     if (!q) return null;
-    if (ALIASES[q] && knownZone(ALIASES[q])) return ALIASES[q];
 
-    const zones = allZones();
-    const exactId = zones.find(tz => tz.toLowerCase() === q);
-    if (exactId) return exactId;
+    if (ALIASES[q]) {
+        const aliased = PLACES.find(p => p.tz === ALIASES[q]);
+        if (aliased) return aliased;
+    }
 
-    const exactLabel = zones.find(tz => zoneLabel(tz).toLowerCase() === q);
-    if (exactLabel) return exactLabel;
+    const tests = [
+        p => p.country.toLowerCase() === q || p.city.toLowerCase() === q,
+        p => p.code.toLowerCase() === q || p.tz.toLowerCase() === q,
+        p => p.country.toLowerCase().startsWith(q) || p.city.toLowerCase().startsWith(q),
+        p => p.country.toLowerCase().includes(q) || p.city.toLowerCase().includes(q),
+        p => p.tz.toLowerCase().includes(q)
+    ];
+    for (const test of tests) {
+        const hit = PLACES.find(test);
+        if (hit) return hit;
+    }
 
     const aliasKey = Object.keys(ALIASES).find(k => k.startsWith(q));
-    const startsWith = zones.find(tz => zoneLabel(tz).toLowerCase().startsWith(q));
-    if (startsWith) return startsWith;
-    if (aliasKey) return ALIASES[aliasKey];
+    if (aliasKey) {
+        const aliased = PLACES.find(p => p.tz === ALIASES[aliasKey]);
+        if (aliased) return aliased;
+    }
 
-    return zones.find(tz => tz.toLowerCase().includes(q)) || null;
+    // Fall back to any zone the browser knows, even without a country row.
+    const zone = allZones().find(tz => tz.toLowerCase().includes(q));
+    return zone ? (PLACES.find(p => p.tz === zone) || adhocPlace(zone)) : null;
 }
 
 function fillDatalist() {
     const frag = document.createDocumentFragment();
-    for (const tz of allZones()) {
+    for (const place of PLACES) {
         const option = document.createElement('option');
-        option.value = zoneLabel(tz);
-        option.label = tz;
+        option.value = place.city === place.country
+            ? place.country
+            : `${place.city} \u2014 ${place.country}`;
+        option.label = place.tz;
         frag.appendChild(option);
     }
     el.zoneList.replaceChildren(frag);
@@ -413,12 +697,13 @@ function setLive(live) {
  * Overlap analysis
  * ------------------------------------------------------------------ */
 
-/** For each hour of the planner day (in the reference zone): how many zones are working. */
+/** For each hour of the planner day (in the reference zone): who is working. */
 function overlapByHour() {
+    const places = state.places.map(placeById).filter(Boolean);
     const rows = [];
     for (let hour = 0; hour < 24; hour++) {
         const ts = tsAtRefHour(hour);
-        const working = state.zones.filter(tz => inWorkHours(zonedParts(ts, tz).hour));
+        const working = places.filter(p => inWorkHours(zonedParts(ts, p.tz).hour));
         rows.push({ hour, ts, count: working.length, working });
     }
     return rows;
@@ -453,7 +738,7 @@ function bestWindows(rows) {
  * Rendering
  * ------------------------------------------------------------------ */
 
-function buildCard(tz) {
+function buildCard(place) {
     const root = document.createElement('article');
     root.className = 'clock-card';
     root.innerHTML = `
@@ -480,7 +765,7 @@ function buildCard(tz) {
         cells.push(cell);
     }
 
-    root.querySelector('.remove').addEventListener('click', () => removeZone(tz));
+    root.querySelector('.remove').addEventListener('click', () => removePlace(place.id));
 
     const node = {
         root,
@@ -496,24 +781,26 @@ function buildCard(tz) {
         cells
     };
 
-    node.emoji.textContent = zoneEmoji(tz);
-    node.city.textContent = zoneLabel(tz);
-    node.zone.textContent = zoneRegion(tz) ? `${zoneRegion(tz)} · ${tz}` : tz;
+    node.emoji.textContent = place.flag;
+    node.city.textContent = place.city;
+    node.zone.textContent = place.city === place.country
+        ? place.tz
+        : `${place.country} · ${place.tz}`;
     return node;
 }
 
 function renderCards() {
-    for (const [tz, node] of cards) {
-        if (!state.zones.includes(tz)) {
+    for (const [id, node] of cards) {
+        if (!state.places.includes(id)) {
             node.root.remove();
-            cards.delete(tz);
+            cards.delete(id);
         }
     }
-    for (const tz of state.zones) {
-        if (!cards.has(tz)) cards.set(tz, buildCard(tz));
-        el.clocks.appendChild(cards.get(tz).root); // also fixes ordering
+    for (const id of state.places) {
+        if (!cards.has(id)) cards.set(id, buildCard(placeById(id)));
+        el.clocks.appendChild(cards.get(id).root); // also fixes ordering
     }
-    el.emptyState.hidden = state.zones.length > 0;
+    el.emptyState.hidden = state.places.length > 0;
 }
 
 function updateCards() {
@@ -521,8 +808,9 @@ function updateCards() {
     const refDay = zonedParts(ts, refTz());
     const withSeconds = state.live;
 
-    for (const tz of state.zones) {
-        const node = cards.get(tz);
+    for (const id of state.places) {
+        const node = cards.get(id);
+        const tz = placeById(id).tz;
         const p = zonedParts(ts, tz);
         const time = formatClock(ts, tz, withSeconds);
         const match = /\s*(AM|PM)$/i.exec(time);
@@ -560,7 +848,7 @@ function calendarDayDelta(parts, refParts) {
 
 function renderOverlap() {
     const rows = overlapByHour();
-    const total = state.zones.length;
+    const total = state.places.length;
     const currentHour = zonedParts(state.planTs, refTz()).hour;
 
     if (el.overlapStrip.childElementCount !== 24) {
@@ -646,7 +934,8 @@ function renderReadout() {
 }
 
 function renderRefOptions() {
-    const options = [...new Set([DEVICE_TZ, ...state.zones])];
+    const zones = state.places.map(id => placeById(id).tz);
+    const options = [...new Set([DEVICE_TZ, ...zones])];
     const frag = document.createDocumentFragment();
     for (const tz of options) {
         const option = document.createElement('option');
@@ -670,33 +959,34 @@ function render() {
  * Actions
  * ------------------------------------------------------------------ */
 
-function addZone(tz) {
-    if (state.zones.includes(tz)) {
-        toast(`${zoneLabel(tz)} is already on the board`);
+function addPlace(place) {
+    if (state.places.includes(place.id)) {
+        toast(`${place.city} is already on the board`);
         return;
     }
-    state.zones.push(tz);
+    state.places.push(place.id);
     save();
     renderRefOptions();
     render();
-    toast(`Added ${zoneLabel(tz)}`);
+    toast(`Added ${place.city}${place.city === place.country ? '' : ', ' + place.country}`);
 }
 
-function removeZone(tz) {
-    state.zones = state.zones.filter(z => z !== tz);
+function removePlace(id) {
+    state.places = state.places.filter(x => x !== id);
     save();
     renderRefOptions();
     render();
 }
 
 function copySummary() {
-    if (!state.zones.length) return;
+    if (!state.places.length) return;
+    const places = state.places.map(placeById).filter(Boolean);
     const lines = [`Meeting time — ${formatDate(state.planTs, refTz())}`];
-    const width = Math.max(...state.zones.map(tz => zoneLabel(tz).length));
-    for (const tz of state.zones) {
-        const p = zonedParts(state.planTs, tz);
-        const flag = inWorkHours(p.hour) ? '' : (hourCategory(p.hour) === 'sleep' ? '  (asleep)' : '  (off hours)');
-        lines.push(`• ${zoneLabel(tz).padEnd(width)}  ${formatClock(state.planTs, tz, false)}  ${formatDate(state.planTs, tz)}${flag}`);
+    const width = Math.max(...places.map(p => p.city.length));
+    for (const place of places) {
+        const p = zonedParts(state.planTs, place.tz);
+        const note = inWorkHours(p.hour) ? '' : (hourCategory(p.hour) === 'sleep' ? '  (asleep)' : '  (off hours)');
+        lines.push(`• ${place.city.padEnd(width)}  ${formatClock(state.planTs, place.tz, false)}  ${formatDate(state.planTs, place.tz)}${note}`);
     }
     const text = lines.join('\n');
 
@@ -752,8 +1042,9 @@ function icsFold(line) {
 function buildIcs() {
     const start = state.planTs;
     const end = start + state.duration * 60000;
-    const cities = state.zones
-        .map(tz => `${zoneLabel(tz)}: ${formatClock(start, tz, false)} ${formatDate(start, tz)}`)
+    const places = state.places.map(placeById).filter(Boolean);
+    const cities = places
+        .map(p => `${p.city}: ${formatClock(start, p.tz, false)} ${formatDate(start, p.tz)}`)
         .join('\n');
 
     const lines = [
@@ -767,7 +1058,7 @@ function buildIcs() {
         `DTSTAMP:${icsStamp(Date.now())}`,
         `DTSTART:${icsStamp(start)}`,
         `DTEND:${icsStamp(end)}`,
-        `SUMMARY:${icsEscape('Global sync — ' + state.zones.map(zoneLabel).join(', '))}`,
+        `SUMMARY:${icsEscape('Global sync — ' + places.map(p => p.city).join(', '))}`,
         `DESCRIPTION:${icsEscape('Local times\n' + cities)}`,
         'END:VEVENT',
         'END:VCALENDAR'
@@ -776,7 +1067,7 @@ function buildIcs() {
 }
 
 function downloadIcs() {
-    if (!state.zones.length) {
+    if (!state.places.length) {
         toast('Add a city first');
         return;
     }
@@ -797,7 +1088,7 @@ function downloadIcs() {
 }
 
 function shareLink() {
-    if (!state.zones.length) {
+    if (!state.places.length) {
         toast('Add a city first');
         return;
     }
@@ -858,17 +1149,17 @@ function fillHourSelects() {
 function bind() {
     el.addForm.addEventListener('submit', e => {
         e.preventDefault();
-        const tz = resolveQuery(el.zoneInput.value);
-        if (!tz) {
-            toast(`No time zone matches “${el.zoneInput.value.trim()}”`);
+        const place = resolvePlace(el.zoneInput.value);
+        if (!place) {
+            toast(`Nothing matches “${el.zoneInput.value.trim()}”`);
             return;
         }
         el.zoneInput.value = '';
-        addZone(tz);
+        addPlace(place);
     });
 
     el.resetBtn.addEventListener('click', () => {
-        state.zones = defaultZones();
+        state.places = defaultPlaces();
         state.refZone = DEVICE_TZ;
         save();
         renderRefOptions();

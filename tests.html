@@ -155,7 +155,7 @@
         /* ---------- overlap ---------- */
 
         check('overlap counts cities inside their working day', () => {
-            state.zones = ['America/New_York', 'Europe/London', 'Asia/Tokyo'];
+            state.places = ['US@America/New_York', 'GB@Europe/London', 'JP@Asia/Tokyo'];
             state.refZone = 'UTC';
             state.workStart = 9;
             state.workEnd = 17;
@@ -173,7 +173,7 @@
         });
 
         check('bestWindows finds the longest run at peak coverage', () => {
-            state.zones = ['Europe/London', 'Europe/Berlin'];
+            state.places = ['GB@Europe/London', 'DE@Europe/Berlin'];
             state.refZone = 'UTC';
             state.planTs = Date.UTC(2026, 6, 15, 12);
             const { best, windows } = bestWindows(overlapByHour());
@@ -185,13 +185,65 @@
 
         /* ---------- search ---------- */
 
-        check('resolveQuery understands ids, labels and aliases', () => {
-            eq(resolveQuery('Asia/Tokyo'), 'Asia/Tokyo');
-            eq(resolveQuery('tokyo'), 'Asia/Tokyo');
-            eq(resolveQuery('tel aviv'), 'Asia/Jerusalem');
-            eq(resolveQuery('nyc'), 'America/New_York');
-            eq(resolveQuery(''), null);
-            eq(resolveQuery('zzzznotacity'), null);
+        check('the country table covers the world without duplicates', () => {
+            const countries = new Set(PLACES.map(p => p.code));
+            const ids = PLACES.map(p => p.id);
+            ok(countries.size > 200, `only ${countries.size} countries`);
+            eq(ids.length, new Set(ids).size, 'ids are unique');
+            ok(PLACES.every(p => knownZone(p.tz)), 'every zone is a real IANA id');
+            ok(PLACES.every(p => p.city && p.country), 'every place is labelled');
+            return `${countries.size} countries, ${PLACES.length} clocks`;
+        });
+
+        check('flags come from the country code', () => {
+            eq(flagOf('IL'), '\u{1F1EE}\u{1F1F1}');
+            eq(flagOf('JP'), '\u{1F1EF}\u{1F1F5}');
+            eq(flagOf('BR'), '\u{1F1E7}\u{1F1F7}');
+            ok(PLACES.every(p => [...p.flag].length === 2), 'every place has a flag');
+        });
+
+        check('resolvePlace finds countries, cities, codes and ids', () => {
+            eq(resolvePlace('Japan').tz, 'Asia/Tokyo');
+            eq(resolvePlace('vietnam').tz, 'Asia/Ho_Chi_Minh');
+            eq(resolvePlace('Kenya').country, 'Kenya');
+            eq(resolvePlace('tokyo').tz, 'Asia/Tokyo');
+            eq(resolvePlace('Asia/Tokyo').tz, 'Asia/Tokyo');
+            eq(resolvePlace('tel aviv').tz, 'Asia/Jerusalem');
+            eq(resolvePlace('nyc').tz, 'America/New_York');
+            eq(resolvePlace('IL').country, 'Israel');
+            eq(resolvePlace(''), null);
+            eq(resolvePlace('zzzznotacity'), null);
+        });
+
+        check('an exact country beats a longer city that merely starts the same', () => {
+            // "Chad" must not land on Chadron-style matches, "Niger" not Nigeria.
+            eq(resolvePlace('Chad').country, 'Chad');
+            eq(resolvePlace('Niger').country, 'Niger');
+            eq(resolvePlace('India').country, 'India');
+        });
+
+        check('every country carries its own zone, not a neighbour\u2019s', () => {
+            // tzdb groups countries that have shared rules since 1970; a country
+            // must still show its own id and city, never the group leader's.
+            const of = code => PLACES.find(p => p.code === code);
+            eq(of('DE').tz, 'Europe/Berlin', 'Germany');
+            eq(of('DK').tz, 'Europe/Copenhagen', 'Denmark');
+            eq(of('ZW').tz, 'Africa/Harare', 'Zimbabwe');
+            eq(of('ZM').tz, 'Africa/Lusaka', 'Zambia');
+            eq(of('AO').tz, 'Africa/Luanda', 'Angola');
+            eq(of('YE').tz, 'Asia/Aden', 'Yemen');
+            // Two countries on the same rules still keep separate clocks.
+            ok(of('ZW').id !== of('ZM').id, 'separate places');
+        });
+
+        check('a bare zone from an older save still resolves', () => {
+            eq(placeById('Asia/Tokyo').id, 'JP@Asia/Tokyo');
+            eq(placeById('America/New_York').id, 'US@America/New_York');
+            // A zone with no country row of its own still works, unlabelled.
+            const adhoc = placeById('America/Indiana/Vincennes');
+            eq(adhoc.tz, 'America/Indiana/Vincennes');
+            eq(adhoc.city, 'Vincennes');
+            eq(placeById('Not/AZone'), null);
         });
 
         /* ---------- calendar invite ---------- */
@@ -212,7 +264,7 @@
         });
 
         check('buildIcs produces a well-formed event', () => {
-            state.zones = ['America/New_York', 'Asia/Tokyo'];
+            state.places = ['US@America/New_York', 'JP@Asia/Tokyo'];
             state.planTs = Date.UTC(2026, 7, 18, 14, 0);
             state.duration = 45;
             const ics = buildIcs();
@@ -226,7 +278,7 @@
         /* ---------- share links ---------- */
 
         check('a share link round-trips through the hash', () => {
-            state.zones = ['Europe/Berlin', 'Asia/Tokyo'];
+            state.places = ['DE@Europe/Berlin', 'JP@Asia/Tokyo'];
             state.refZone = 'Europe/Berlin';
             state.workStart = 8;
             state.workEnd = 16;
@@ -236,10 +288,10 @@
             state.planTs = Date.UTC(2026, 7, 18, 12, 0);
 
             const url = buildShareUrl();
-            const before = { ...state, zones: [...state.zones] };
+            const before = { ...state, places: [...state.places] };
 
             // Wipe state, then rebuild it from the link alone.
-            state.zones = [];
+            state.places = [];
             state.refZone = 'UTC';
             state.workStart = 9;
             state.workEnd = 17;
@@ -251,7 +303,7 @@
             location.hash = url.slice(url.indexOf('#') + 1);
             ok(applyHash(), 'hash applied');
 
-            eq(state.zones, before.zones, 'zones');
+            eq(state.places, before.places, 'places');
             eq(state.refZone, before.refZone, 'reference zone');
             eq([state.workStart, state.workEnd], [before.workStart, before.workEnd], 'working hours');
             eq(state.hour12, true, 'clock format');
@@ -262,7 +314,7 @@
         });
 
         check('a live share link keeps the reader on live time', () => {
-            state.zones = ['Europe/London'];
+            state.places = ['GB@Europe/London'];
             state.live = true;
             const url = buildShareUrl();
             ok(url.includes('live=1'), 'carries live=1');

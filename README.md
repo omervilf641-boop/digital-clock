@@ -3,9 +3,12 @@
 Live world clocks — plus a timeline that answers the question a world clock never does:
 **when can all of us actually meet?**
 
-Scrub the slider and every city moves together. The bar above the clocks shows, hour by hour,
-how many of your cities are inside their working day, and the chips underneath jump straight to
-the longest window where the most people are available.
+Scrub the slider and every clock moves together. The bar above them shows, hour by hour, how many
+of your places are inside their working day, and the chips underneath jump straight to the longest
+window where the most people are available.
+
+**Every country is in there** — 247 of them, 273 clocks, straight from the IANA time zone database,
+each with its flag and its own zone. Type a country, a city, or an ISO code.
 
 No build step, no dependencies, no server. One HTML file, one stylesheet, one script.
 
@@ -27,15 +30,16 @@ Hosting it on GitHub Pages works as-is: Settings → Pages → deploy from the d
 
 | | |
 |---|---|
-| **Live clocks** | Every city ticks in real time, with date, UTC offset and the local abbreviation (EDT, JST…) when there is a meaningful one. |
+| **Every country** | 247 countries and 273 clocks, generated from the IANA tz database — flag, country, city and zone id for each. Search by country ("Kenya"), city ("Nairobi"), ISO code ("KE") or zone id ("Africa/Nairobi"). |
+| **Live clocks** | Every place ticks in real time, with date, UTC offset and the local abbreviation (EDT, JST…) when there is a meaningful one. |
 | **Scrubbable timeline** | Drag the slider (or pick a date) and every clock shows that moment instead of now. "Back to live" returns to real time. |
-| **Overlap bar** | 24 columns for the reference day. Column height = how many cities are inside working hours. Click a column to jump to it. |
+| **Overlap bar** | 24 columns for the reference day. Column height = how many places are inside working hours. Click a column to jump to it. |
 | **Best-window chips** | The longest runs at the best achievable coverage — "everyone is free 16:00–17:00", or the honest "best possible: 3/4 cities". |
-| **Working hours** | Set once, applied to every city. A shift that wraps midnight (22:00–06:00) works too. |
-| **Day strip per city** | A 24-hour bar under each clock: green = working, amber = awake, grey = asleep, with a marker on the shown hour. |
-| **Share link** | Copies a URL that reopens the exact plan — same cities, same moment, same working hours — for whoever you send it to. |
+| **Working hours** | Set once, applied to every place. A shift that wraps midnight (22:00–06:00) works too. |
+| **Day strip per clock** | A 24-hour bar under each clock: green = working, amber = awake, grey = asleep, with a marker on the shown hour. |
+| **Share link** | Copies a URL that reopens the exact plan — same places, same moment, same working hours — for whoever you send it to. |
 | **Calendar invite** | Downloads a `.ics` for the selected moment and length, with every city's local time in the description. |
-| **Copy summary** | A plain-text block for Slack or email: every city, its local time and whether that lands outside their day. |
+| **Copy summary** | A plain-text block for Slack or email: every place, its local time and whether that lands outside their day. |
 | **12/24 hour, light/dark** | The theme follows your OS on a first visit and your toggle after that. Both remembered, along with your city list. |
 
 Everything is stored in `localStorage` on your own machine. Nothing is sent anywhere.
@@ -66,15 +70,27 @@ compromise rather than pretending.
 `Share link` produces something like:
 
 ```
-https://…/index.html#z=Asia%2FJerusalem,America%2FNew_York&ref=Asia%2FJerusalem&w=9-17&f=24&d=60&t=1787050800
+https://…/index.html#z=IL%40Asia%2FJerusalem%2CUS%40America%2FNew_York&ref=Asia%2FJerusalem&w=9-17&f=24&d=60&t=1787050800
 ```
 
-The link carries the plan (cities, reference zone, moment, working hours, clock format, meeting
+The link carries the plan (places, reference zone, moment, working hours, clock format, meeting
 length) — not the reader's preferences: their theme stays theirs. Opening a link shows the shared
-plan without overwriting the reader's own saved city list; the moment they change something, it
-becomes theirs.
+plan without overwriting the reader's own saved places; the moment they change something, it
+becomes theirs. Links from before countries existed, which carried bare zone ids, still open.
 
 ---
+
+## Where the countries come from
+
+The country list is generated from the tz database shipped with the system (`zone.tab` and
+`iso3166.tab`), not hand-written. Each country gets **its own** zone id, which matters more than it
+sounds: tzdb groups countries whose rules have matched since 1970, so a naive read files Zimbabwe
+under Mozambique's zone, Angola under Nigeria's, and — as the tests caught — Germany under
+Switzerland's. Every row here carries the country's own id and its own city.
+
+A handful of countries are wide enough that one clock would hide a real difference; those carry
+several, each a distinct offset: the US, Canada, Russia, Brazil, Australia, Mexico, Indonesia,
+Kazakhstan, Chile, Portugal, Spain, Ecuador and DR Congo.
 
 ## Time zone handling
 
@@ -91,8 +107,9 @@ Two cases the code handles explicitly:
 ## Tests
 
 Open **`tests.html`** in a browser. It loads `script.js` (which no-ops without the planner markup)
-and asserts the time math, overlap logic, calendar output and share-link round-trip — 21 cases,
-including DST edges and 160 wall-clock round-trips across ten zones and four seasons.
+and asserts the time math, overlap logic, country table, calendar output and share-link
+round-trip — 26 cases, including DST edges, 160 wall-clock round-trips across ten zones and four
+seasons, and a check that no country borrows a neighbour's zone.
 
 Serving it works too — `python3 -m http.server 8000`, then open
 `http://localhost:8000/tests.html`. The page also exposes `window.__testResults`, so a headless
@@ -105,19 +122,18 @@ runner can read the pass/fail count without scraping the DOM.
 ```
 index.html    markup for the planner
 style.css     theming (light/dark via CSS variables), layout, the strips
-script.js     time math, overlap analysis, rendering, share links, .ics export
+script.js     the country table, time math, overlap analysis, rendering, sharing, .ics
 tests.html    browser-run assertions for everything in script.js that isn't DOM
 ```
 
 ## Browser support
 
-Chrome, Firefox, Safari and Edge, current versions, desktop and mobile. The full IANA city list in
-the search box comes from `Intl.supportedValuesOf('timeZone')`; where that is missing, the app falls
-back to its curated list of ~45 cities.
+Chrome, Firefox, Safari and Edge, current versions, desktop and mobile. Search also accepts any
+zone id the browser knows via `Intl.supportedValuesOf('timeZone')`, on top of the 273 built in.
 
 ## Ideas not built yet
 
-- [ ] Per-city working hours (a 10–18 city next to an 8–16 one)
+- [ ] Per-place working hours (a 10–18 country next to an 8–16 one)
 - [ ] Drag to reorder the clocks
 - [ ] Sunrise/sunset shading instead of fixed sleep hours
 - [ ] A "who's excluded" list next to each suggested window
