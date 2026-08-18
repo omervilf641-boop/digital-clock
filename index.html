@@ -34,6 +34,10 @@
                     <span>Date</span>
                     <input type="date" id="planDate">
                 </label>
+                <label class="field">
+                    <span>Length</span>
+                    <select id="duration"></select>
+                </label>
                 <div class="readout">
                     <span class="readout-time" id="planTime">--:--</span>
                     <span class="readout-zone" id="planZoneLabel">&mdash;</span>
@@ -66,6 +70,8 @@
                 <button type="submit" class="primary">Add</button>
             </form>
             <div class="addbar-actions">
+                <button id="shareBtn" class="ghost" type="button" title="Copy a link that reopens this exact plan">Share link</button>
+                <button id="icsBtn" class="ghost" type="button" title="Download a calendar invite for the selected time">Calendar invite</button>
                 <button id="copyBtn" class="ghost" type="button">Copy summary</button>
                 <button id="resetBtn" class="ghost" type="button">Reset</button>
             </div>

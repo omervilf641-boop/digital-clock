@@ -11,6 +11,7 @@ const SLOT_MINUTES = 15;
 const SLOTS_PER_DAY = (24 * 60) / SLOT_MINUTES; // 96
 
 const DEVICE_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+const DURATIONS = [15, 30, 45, 60, 90, 120];
 
 // A short curated list keeps search friendly; the full IANA list is added on top.
 const CURATED = [
@@ -90,6 +91,7 @@ const state = {
     refZone: DEVICE_TZ,
     workStart: 9,
     workEnd: 17,
+    duration: 60,
     planTs: Date.now()
 };
 
@@ -224,7 +226,8 @@ function save() {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
             zones: state.zones, hour12: state.hour12, theme: state.theme,
-            refZone: state.refZone, workStart: state.workStart, workEnd: state.workEnd
+            refZone: state.refZone, workStart: state.workStart, workEnd: state.workEnd,
+            duration: state.duration
         }));
     } catch {
         /* private mode — run without persistence */
@@ -249,6 +252,63 @@ function load() {
     state.refZone = knownZone(saved.refZone) ? saved.refZone : DEVICE_TZ;
     if (Number.isInteger(saved.workStart)) state.workStart = saved.workStart;
     if (Number.isInteger(saved.workEnd)) state.workEnd = saved.workEnd;
+    if (DURATIONS.includes(saved.duration)) state.duration = saved.duration;
+}
+
+/* ------------------------------------------------------------------ *
+ * Shareable links
+ *
+ * A link carries the plan, not the reader's preferences: cities, the
+ * reference zone, the moment (or "live"), working hours and clock format.
+ * Theme stays whatever the reader picked.
+ * ------------------------------------------------------------------ */
+
+function buildShareUrl() {
+    const params = new URLSearchParams();
+    params.set('z', state.zones.join(','));
+    params.set('ref', refTz());
+    params.set('w', `${state.workStart}-${state.workEnd}`);
+    params.set('f', state.hour12 ? '12' : '24');
+    params.set('d', String(state.duration));
+    if (state.live) params.set('live', '1');
+    else params.set('t', String(Math.round(state.planTs / 1000)));
+    return location.origin + location.pathname + location.search + '#' + params.toString();
+}
+
+/** Read a shared plan out of the URL hash. Returns true when one was applied. */
+function applyHash() {
+    const raw = location.hash.replace(/^#/, '');
+    if (!raw) return false;
+
+    const params = new URLSearchParams(raw);
+    const zones = (params.get('z') || '').split(',').map(s => s.trim()).filter(knownZone);
+    if (!zones.length) return false;
+    state.zones = zones;
+
+    const ref = params.get('ref');
+    state.refZone = knownZone(ref) ? ref : DEVICE_TZ;
+
+    const work = /^(\d{1,2})-(\d{1,2})$/.exec(params.get('w') || '');
+    if (work) {
+        const [, start, end] = work.map(Number);
+        if (start < 24 && end < 24) {
+            state.workStart = start;
+            state.workEnd = end;
+        }
+    }
+
+    if (params.get('f') === '12') state.hour12 = true;
+    if (params.get('f') === '24') state.hour12 = false;
+
+    const duration = Number(params.get('d'));
+    if (DURATIONS.includes(duration)) state.duration = duration;
+
+    const seconds = Number(params.get('t'));
+    if (params.get('live') !== '1' && Number.isFinite(seconds) && seconds > 0) {
+        state.planTs = seconds * 1000;
+        state.live = false;
+    }
+    return true;
 }
 
 /* ------------------------------------------------------------------ *
@@ -651,6 +711,92 @@ function fallbackCopy(text, done) {
     ta.remove();
 }
 
+/* ------------------------------------------------------------------ *
+ * Calendar invite (RFC 5545)
+ * ------------------------------------------------------------------ */
+
+function icsStamp(ts) {
+    return new Date(ts).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+}
+
+function icsEscape(text) {
+    return text.replace(/([\\;,])/g, '\\$1').replace(/\n/g, '\\n');
+}
+
+/** Content lines must not exceed 75 octets; continuations start with a space. */
+function icsFold(line) {
+    const out = [];
+    let rest = line;
+    while (rest.length > 74) {
+        out.push(rest.slice(0, 74));
+        rest = ' ' + rest.slice(74);
+    }
+    out.push(rest);
+    return out.join('\r\n');
+}
+
+function buildIcs() {
+    const start = state.planTs;
+    const end = start + state.duration * 60000;
+    const cities = state.zones
+        .map(tz => `${zoneLabel(tz)}: ${formatClock(start, tz, false)} ${formatDate(start, tz)}`)
+        .join('\n');
+
+    const lines = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Global Time Planner//EN',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'BEGIN:VEVENT',
+        `UID:${start}-${Math.random().toString(36).slice(2, 10)}@global-time-planner`,
+        `DTSTAMP:${icsStamp(Date.now())}`,
+        `DTSTART:${icsStamp(start)}`,
+        `DTEND:${icsStamp(end)}`,
+        `SUMMARY:${icsEscape('Global sync — ' + state.zones.map(zoneLabel).join(', '))}`,
+        `DESCRIPTION:${icsEscape('Local times\n' + cities)}`,
+        'END:VEVENT',
+        'END:VCALENDAR'
+    ];
+    return lines.map(icsFold).join('\r\n') + '\r\n';
+}
+
+function downloadIcs() {
+    if (!state.zones.length) {
+        toast('Add a city first');
+        return;
+    }
+    const p = zonedParts(state.planTs, refTz());
+    const pad = n => String(n).padStart(2, '0');
+    const name = `meeting-${p.year}-${pad(p.month)}-${pad(p.day)}-${pad(p.hour)}${pad(p.minute)}.ics`;
+
+    const blob = new Blob([buildIcs()], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast(`Invite downloaded — ${state.duration} min`);
+}
+
+function shareLink() {
+    if (!state.zones.length) {
+        toast('Add a city first');
+        return;
+    }
+    const url = buildShareUrl();
+    history.replaceState(null, '', url);
+    const done = () => toast('Link copied — it reopens this exact plan');
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(url).then(done, () => fallbackCopy(url, done));
+    } else {
+        fallbackCopy(url, done);
+    }
+}
+
 let toastTimer = null;
 function toast(message) {
     el.toast.textContent = message;
@@ -681,6 +827,18 @@ function fillHourSelects() {
     }
     el.workStart.value = String(state.workStart);
     el.workEnd.value = String(state.workEnd);
+
+    const frag = document.createDocumentFragment();
+    for (const minutes of DURATIONS) {
+        const option = document.createElement('option');
+        option.value = String(minutes);
+        option.textContent = minutes >= 60 && minutes % 60 === 0
+            ? `${minutes / 60} hr`
+            : `${minutes} min`;
+        frag.appendChild(option);
+    }
+    el.duration.replaceChildren(frag);
+    el.duration.value = String(state.duration);
 }
 
 function bind() {
@@ -707,6 +865,13 @@ function bind() {
     });
 
     el.copyBtn.addEventListener('click', copySummary);
+    el.shareBtn.addEventListener('click', shareLink);
+    el.icsBtn.addEventListener('click', downloadIcs);
+
+    el.duration.addEventListener('change', () => {
+        state.duration = Number(el.duration.value);
+        save();
+    });
 
     el.formatBtn.addEventListener('click', () => {
         state.hour12 = !state.hour12;
@@ -774,14 +939,23 @@ function tick() {
 }
 
 function init() {
+    // script.js is also loaded by tests.html, which has none of this markup.
+    if (!document.getElementById('clocks')) return;
+
     for (const id of ['refZone', 'planDate', 'planSlider', 'planTime', 'planZoneLabel', 'nowBtn',
-        'overlapStrip', 'overlapLabels', 'suggestions', 'workStart', 'workEnd', 'addForm',
-        'zoneInput', 'zoneList', 'copyBtn', 'resetBtn', 'formatBtn', 'themeBtn', 'clocks',
-        'emptyState', 'toast']) {
+        'overlapStrip', 'overlapLabels', 'suggestions', 'workStart', 'workEnd', 'duration',
+        'addForm', 'zoneInput', 'zoneList', 'shareBtn', 'icsBtn', 'copyBtn', 'resetBtn',
+        'formatBtn', 'themeBtn', 'clocks', 'emptyState', 'toast']) {
         el[id] = document.getElementById(id);
     }
 
     load();
+    const shared = applyHash();
+    if (shared) {
+        // Leave the reader's saved plan untouched until they edit something,
+        // and drop the hash so a later reload isn't pinned to a stale moment.
+        history.replaceState(null, '', location.pathname + location.search);
+    }
     applyTheme();
     el.formatBtn.textContent = state.hour12 ? '12h' : '24h';
     fillHourSelects();
@@ -789,9 +963,10 @@ function init() {
     renderRefOptions();
     bind();
 
-    state.planTs = Date.now();
+    if (state.live) state.planTs = Date.now();
     syncControlsFromPlanTs();
-    setLive(true);
+    setLive(state.live);
+    if (shared) toast('Opened a shared plan');
 
     setInterval(tick, 1000);
     // Overlap only shifts as the day moves — refresh it on the minute.
