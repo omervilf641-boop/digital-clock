@@ -1,152 +1,803 @@
-// Timezone data with major cities
-const timezones = [
-    { city: 'New York', tz: 'America/New_York', emoji: '🗽' },
-    { city: 'London', tz: 'Europe/London', emoji: '🇬🇧' },
-    { city: 'Tokyo', tz: 'Asia/Tokyo', emoji: '🗾' },
-    { city: 'Sydney', tz: 'Australia/Sydney', emoji: '🦘' },
-    { city: 'Dubai', tz: 'Asia/Dubai', emoji: '🏙️' },
-    { city: 'Singapore', tz: 'Asia/Singapore', emoji: '🌴' },
-    { city: 'Hong Kong', tz: 'Asia/Hong_Kong', emoji: '🎎' },
-    { city: 'Mumbai', tz: 'Asia/Kolkata', emoji: '🇮🇳' },
-    { city: 'Paris', tz: 'Europe/Paris', emoji: '🗼' },
-    { city: 'Berlin', tz: 'Europe/Berlin', emoji: '🇩🇪' },
-    { city: 'Moscow', tz: 'Europe/Moscow', emoji: '🍄' },
-    { city: 'Bangkok', tz: 'Asia/Bangkok', emoji: '🏖️' },
-    { city: 'Istanbul', tz: 'Europe/Istanbul', emoji: '🕌' },
-    { city: 'São Paulo', tz: 'America/Sao_Paulo', emoji: '🇧🇷' },
-    { city: 'Mexico City', tz: 'America/Mexico_City', emoji: '🌮' },
-    { city: 'Los Angeles', tz: 'America/Los_Angeles', emoji: '☀️' },
-    { city: 'Chicago', tz: 'America/Chicago', emoji: '🌊' },
-    { city: 'Toronto', tz: 'America/Toronto', emoji: '🍁' },
-    { city: 'Seoul', tz: 'Asia/Seoul', emoji: '🇰🇷' },
-    { city: 'Bangkok', tz: 'Asia/Bangkok', emoji: '🏝️' }
+'use strict';
+
+/* ------------------------------------------------------------------ *
+ * Global Time Planner
+ * Live world clocks + a scrubbable timeline that finds the hours
+ * every displayed city is inside its working day.
+ * ------------------------------------------------------------------ */
+
+const STORAGE_KEY = 'gtp.state.v1';
+const SLOT_MINUTES = 15;
+const SLOTS_PER_DAY = (24 * 60) / SLOT_MINUTES; // 96
+
+const DEVICE_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+
+// A short curated list keeps search friendly; the full IANA list is added on top.
+const CURATED = [
+    ['America/Los_Angeles', 'Los Angeles', '🌴'],
+    ['America/Denver', 'Denver', '🏔️'],
+    ['America/Chicago', 'Chicago', '🌆'],
+    ['America/New_York', 'New York', '🗽'],
+    ['America/Toronto', 'Toronto', '🍁'],
+    ['America/Mexico_City', 'Mexico City', '🌮'],
+    ['America/Bogota', 'Bogotá', '☕'],
+    ['America/Sao_Paulo', 'São Paulo', '🇧🇷'],
+    ['America/Argentina/Buenos_Aires', 'Buenos Aires', '💃'],
+    ['Atlantic/Reykjavik', 'Reykjavík', '🌋'],
+    ['Europe/Dublin', 'Dublin', '☘️'],
+    ['Europe/London', 'London', '🇬🇧'],
+    ['Europe/Lisbon', 'Lisbon', '🐟'],
+    ['Europe/Madrid', 'Madrid', '🇪🇸'],
+    ['Europe/Paris', 'Paris', '🗼'],
+    ['Europe/Amsterdam', 'Amsterdam', '🚲'],
+    ['Europe/Berlin', 'Berlin', '🇩🇪'],
+    ['Europe/Zurich', 'Zurich', '🏔️'],
+    ['Europe/Stockholm', 'Stockholm', '🇸🇪'],
+    ['Europe/Warsaw', 'Warsaw', '🇵🇱'],
+    ['Europe/Athens', 'Athens', '🏛️'],
+    ['Europe/Istanbul', 'Istanbul', '🕌'],
+    ['Europe/Kyiv', 'Kyiv', '🌻'],
+    ['Europe/Moscow', 'Moscow', '🇷🇺'],
+    ['Africa/Lagos', 'Lagos', '🇳🇬'],
+    ['Africa/Cairo', 'Cairo', '🏜️'],
+    ['Africa/Nairobi', 'Nairobi', '🦁'],
+    ['Africa/Johannesburg', 'Johannesburg', '🇿🇦'],
+    ['Asia/Jerusalem', 'Tel Aviv', '🇮🇱'],
+    ['Asia/Dubai', 'Dubai', '🏙️'],
+    ['Asia/Karachi', 'Karachi', '🇵🇰'],
+    ['Asia/Kolkata', 'Bengaluru', '🇮🇳'],
+    ['Asia/Dhaka', 'Dhaka', '🇧🇩'],
+    ['Asia/Bangkok', 'Bangkok', '🏝️'],
+    ['Asia/Jakarta', 'Jakarta', '🇮🇩'],
+    ['Asia/Singapore', 'Singapore', '🇸🇬'],
+    ['Asia/Hong_Kong', 'Hong Kong', '🏮'],
+    ['Asia/Shanghai', 'Shanghai', '🇨🇳'],
+    ['Asia/Seoul', 'Seoul', '🇰🇷'],
+    ['Asia/Tokyo', 'Tokyo', '🗾'],
+    ['Australia/Perth', 'Perth', '🦈'],
+    ['Australia/Sydney', 'Sydney', '🦘'],
+    ['Pacific/Auckland', 'Auckland', '🥝'],
+    ['Pacific/Honolulu', 'Honolulu', '🌺'],
+    ['UTC', 'UTC', '🌐']
 ];
 
-let displayedTimezones = [];
-let use24HourFormat = true;
+// Extra spellings people actually type.
+const ALIASES = {
+    'tel aviv': 'Asia/Jerusalem', 'israel': 'Asia/Jerusalem', 'jerusalem': 'Asia/Jerusalem',
+    'nyc': 'America/New_York', 'new york city': 'America/New_York',
+    'sf': 'America/Los_Angeles', 'san francisco': 'America/Los_Angeles',
+    'bay area': 'America/Los_Angeles', 'seattle': 'America/Los_Angeles',
+    'la': 'America/Los_Angeles', 'silicon valley': 'America/Los_Angeles',
+    'bangalore': 'Asia/Kolkata', 'mumbai': 'Asia/Kolkata', 'delhi': 'Asia/Kolkata',
+    'india': 'Asia/Kolkata', 'beijing': 'Asia/Shanghai', 'china': 'Asia/Shanghai',
+    'uk': 'Europe/London', 'england': 'Europe/London', 'britain': 'Europe/London',
+    'germany': 'Europe/Berlin', 'france': 'Europe/Paris', 'japan': 'Asia/Tokyo',
+    'gmt': 'UTC', 'utc': 'UTC'
+};
 
-// Initialize with default timezones
-function initializeDefault() {
-    const defaultCities = ['New York', 'London', 'Tokyo', 'Sydney'];
-    displayedTimezones = timezones.filter(tz => defaultCities.includes(tz.city));
-    renderClocks();
+const EMOJI = Object.fromEntries(CURATED.map(([tz, , emoji]) => [tz, emoji]));
+const NICE_NAME = Object.fromEntries(CURATED.map(([tz, name]) => [tz, name]));
+
+/* ------------------------------------------------------------------ *
+ * State
+ * ------------------------------------------------------------------ */
+
+const state = {
+    zones: [],
+    hour12: false,
+    theme: 'dark',
+    live: true,
+    refZone: DEVICE_TZ,
+    workStart: 9,
+    workEnd: 17,
+    planTs: Date.now()
+};
+
+const el = {};
+const cards = new Map(); // tz -> { root, nodes… }
+
+/* ------------------------------------------------------------------ *
+ * Time helpers
+ * ------------------------------------------------------------------ */
+
+const partsFormatters = new Map();
+
+function partsFormatter(tz) {
+    let f = partsFormatters.get(tz);
+    if (!f) {
+        f = new Intl.DateTimeFormat('en-US', {
+            timeZone: tz, hourCycle: 'h23',
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            weekday: 'short'
+        });
+        partsFormatters.set(tz, f);
+    }
+    return f;
 }
 
-// Render all clock cards
-function renderClocks() {
-    const grid = document.getElementById('clocksGrid');
-    grid.innerHTML = '';
-
-    displayedTimezones.forEach((tz, index) => {
-        const card = document.createElement('div');
-        card.className = 'clock-card active';
-        card.innerHTML = `
-            <button class="close-btn" onclick="removeTimezone(${index})" title="Remove timezone">✕</button>
-            <div class="timezone-name">${tz.emoji} ${tz.city}</div>
-            <div class="digital-time" id="time-${index}">--:--:--</div>
-            <div class="date-display" id="date-${index}">---</div>
-            <div class="day-display" id="day-${index}">---</div>
-            <div class="offset-info" id="offset-${index}">---</div>
-        `;
-        grid.appendChild(card);
-    });
-
-    updateClocks();
+/** Wall-clock fields for an instant in a zone. */
+function zonedParts(ts, tz) {
+    const out = {};
+    for (const p of partsFormatter(tz).formatToParts(ts)) {
+        if (p.type !== 'literal') out[p.type] = p.value;
+    }
+    return {
+        year: +out.year, month: +out.month, day: +out.day,
+        hour: +out.hour, minute: +out.minute, second: +out.second,
+        weekday: out.weekday
+    };
 }
 
-// Update time for all clocks
-function updateClocks() {
-    displayedTimezones.forEach((tz, index) => {
-        const now = new Date();
-        const formatter = new Intl.DateTimeFormat('en-US', {
-            timeZone: tz.tz,
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: !use24HourFormat
-        });
-
-        const dateFormatter = new Intl.DateTimeFormat('en-US', {
-            timeZone: tz.tz,
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-
-        const dayFormatter = new Intl.DateTimeFormat('en-US', {
-            timeZone: tz.tz,
-            weekday: 'long'
-        });
-
-        // Calculate offset
-        const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
-        const tzDate = new Date(now.toLocaleString('en-US', { timeZone: tz.tz }));
-        const offset = (tzDate - utcDate) / (1000 * 60 * 60);
-        const offsetStr = offset >= 0 ? `UTC+${offset.toFixed(1)}` : `UTC${offset.toFixed(1)}`;
-
-        document.getElementById(`time-${index}`).textContent = formatter.format(now);
-        document.getElementById(`date-${index}`).textContent = dateFormatter.format(now);
-        document.getElementById(`day-${index}`).textContent = dayFormatter.format(now);
-        document.getElementById(`offset-${index}`).textContent = offsetStr;
-    });
+/** Zone offset from UTC, in minutes, at a given instant. */
+function offsetMinutes(ts, tz) {
+    const p = zonedParts(ts, tz);
+    const asUTC = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second);
+    return (asUTC - Math.floor(ts / 1000) * 1000) / 60000;
 }
 
-// Search and add timezone
-function searchTimezone() {
-    const input = document.getElementById('timezoneInput').value.toLowerCase().trim();
-    
-    if (!input) {
-        alert('Please enter a timezone or city name');
+/** Inverse of zonedParts: the instant at which a zone shows this wall clock. */
+function zonedToTs(year, month, day, hour, minute, tz) {
+    const naive = Date.UTC(year, month - 1, day, hour, minute);
+    let ts = naive - offsetMinutes(naive, tz) * 60000;
+    ts = naive - offsetMinutes(ts, tz) * 60000; // second pass settles DST edges
+    return ts;
+}
+
+function formatOffset(minutes) {
+    const sign = minutes < 0 ? '-' : '+';
+    const abs = Math.abs(minutes);
+    const h = Math.floor(abs / 60);
+    const m = abs % 60;
+    return 'UTC' + sign + h + (m ? ':' + String(m).padStart(2, '0') : '');
+}
+
+function zoneAbbr(ts, tz) {
+    const parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'short' })
+        .formatToParts(ts);
+    const found = parts.find(p => p.type === 'timeZoneName');
+    return found ? found.value : '';
+}
+
+function formatClock(ts, tz, withSeconds) {
+    const opts = { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: state.hour12 };
+    if (!state.hour12) opts.hourCycle = 'h23';
+    if (withSeconds) opts.second = '2-digit';
+    return new Intl.DateTimeFormat('en-US', opts).format(ts);
+}
+
+function formatDate(ts, tz) {
+    return new Intl.DateTimeFormat('en-US', {
+        timeZone: tz, weekday: 'long', month: 'short', day: 'numeric'
+    }).format(ts);
+}
+
+function zoneLabel(tz) {
+    if (NICE_NAME[tz]) return NICE_NAME[tz];
+    const tail = tz.split('/').pop() || tz;
+    return tail.replace(/_/g, ' ');
+}
+
+function zoneRegion(tz) {
+    const head = tz.split('/')[0];
+    return tz.includes('/') ? head.replace(/_/g, ' ') : '';
+}
+
+function zoneEmoji(tz) {
+    return EMOJI[tz] || '🕘';
+}
+
+/* ------------------------------------------------------------------ *
+ * Working hours
+ * ------------------------------------------------------------------ */
+
+function inWorkHours(hour) {
+    const { workStart: s, workEnd: e } = state;
+    return s < e ? (hour >= s && hour < e) : (hour >= s || hour < e);
+}
+
+function hourCategory(hour) {
+    if (inWorkHours(hour)) return 'work';
+    if (hour < 7 || hour >= 23) return 'sleep';
+    return 'awake';
+}
+
+/* ------------------------------------------------------------------ *
+ * Persistence
+ * ------------------------------------------------------------------ */
+
+function knownZone(tz) {
+    try {
+        new Intl.DateTimeFormat('en-US', { timeZone: tz });
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+function defaultZones() {
+    const wanted = [DEVICE_TZ, 'America/New_York', 'Europe/London', 'Asia/Tokyo'];
+    return [...new Set(wanted)].filter(knownZone);
+}
+
+function save() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            zones: state.zones, hour12: state.hour12, theme: state.theme,
+            refZone: state.refZone, workStart: state.workStart, workEnd: state.workEnd
+        }));
+    } catch {
+        /* private mode — run without persistence */
+    }
+}
+
+function load() {
+    let saved = null;
+    try {
+        saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    } catch {
+        saved = null;
+    }
+    if (!saved) {
+        state.zones = defaultZones();
         return;
     }
+    state.zones = Array.isArray(saved.zones) ? saved.zones.filter(knownZone) : defaultZones();
+    if (!state.zones.length) state.zones = defaultZones();
+    state.hour12 = !!saved.hour12;
+    state.theme = saved.theme === 'light' ? 'light' : 'dark';
+    state.refZone = knownZone(saved.refZone) ? saved.refZone : DEVICE_TZ;
+    if (Number.isInteger(saved.workStart)) state.workStart = saved.workStart;
+    if (Number.isInteger(saved.workEnd)) state.workEnd = saved.workEnd;
+}
 
-    const found = timezones.find(tz => tz.city.toLowerCase().includes(input));
-    
-    if (!found) {
-        alert(`Timezone "${input}" not found. Try: New York, London, Tokyo, Sydney, etc.`);
-        return;
+/* ------------------------------------------------------------------ *
+ * Zone search
+ * ------------------------------------------------------------------ */
+
+function allZones() {
+    let list = [];
+    if (typeof Intl.supportedValuesOf === 'function') {
+        try {
+            list = Intl.supportedValuesOf('timeZone');
+        } catch {
+            list = [];
+        }
     }
+    if (!list.length) list = CURATED.map(([tz]) => tz);
+    return [...new Set([...CURATED.map(([tz]) => tz), ...list])].filter(knownZone);
+}
 
-    // Check if already added
-    if (displayedTimezones.some(tz => tz.city === found.city)) {
-        alert(`${found.city} is already displayed!`);
-        return;
+function resolveQuery(raw) {
+    const q = raw.trim().toLowerCase();
+    if (!q) return null;
+    if (ALIASES[q] && knownZone(ALIASES[q])) return ALIASES[q];
+
+    const zones = allZones();
+    const exactId = zones.find(tz => tz.toLowerCase() === q);
+    if (exactId) return exactId;
+
+    const exactLabel = zones.find(tz => zoneLabel(tz).toLowerCase() === q);
+    if (exactLabel) return exactLabel;
+
+    const aliasKey = Object.keys(ALIASES).find(k => k.startsWith(q));
+    const startsWith = zones.find(tz => zoneLabel(tz).toLowerCase().startsWith(q));
+    if (startsWith) return startsWith;
+    if (aliasKey) return ALIASES[aliasKey];
+
+    return zones.find(tz => tz.toLowerCase().includes(q)) || null;
+}
+
+function fillDatalist() {
+    const frag = document.createDocumentFragment();
+    for (const tz of allZones()) {
+        const option = document.createElement('option');
+        option.value = zoneLabel(tz);
+        option.label = tz;
+        frag.appendChild(option);
     }
-
-    displayedTimezones.push(found);
-    document.getElementById('timezoneInput').value = '';
-    renderClocks();
+    el.zoneList.replaceChildren(frag);
 }
 
-// Remove timezone
-function removeTimezone(index) {
-    displayedTimezones.splice(index, 1);
-    renderClocks();
+/* ------------------------------------------------------------------ *
+ * Planner
+ * ------------------------------------------------------------------ */
+
+function refTz() {
+    return knownZone(state.refZone) ? state.refZone : DEVICE_TZ;
 }
 
-// Toggle 12/24 hour format
-function toggleFormat() {
-    use24HourFormat = !use24HourFormat;
-    updateClocks();
+/** Rebuild planTs from the date input + slider (used when scrubbing). */
+function planTsFromControls() {
+    const [y, m, d] = el.planDate.value.split('-').map(Number);
+    if (!y || !m || !d) return Date.now();
+    const minutes = Number(el.planSlider.value) * SLOT_MINUTES;
+    return zonedToTs(y, m, d, 0, minutes, refTz());
 }
 
-// Reset to default timezones
-function resetDefault() {
-    initializeDefault();
+/** Push planTs back into the date input + slider (used when live or on zone change). */
+function syncControlsFromPlanTs() {
+    const p = zonedParts(state.planTs, refTz());
+    el.planDate.value = [
+        p.year,
+        String(p.month).padStart(2, '0'),
+        String(p.day).padStart(2, '0')
+    ].join('-');
+    el.planSlider.value = String(Math.round((p.hour * 60 + p.minute) / SLOT_MINUTES) % SLOTS_PER_DAY);
 }
 
-// Update clocks every second
-setInterval(updateClocks, 1000);
+function setLive(live) {
+    state.live = live;
+    el.nowBtn.classList.toggle('is-live', live);
+    el.nowBtn.textContent = live ? 'Live' : 'Back to live';
+    document.body.classList.toggle('is-scrubbing', !live);
+    if (live) state.planTs = Date.now();
+    render();
+}
 
-// Allow Enter key in search box
-document.addEventListener('DOMContentLoaded', function() {
-    const input = document.getElementById('timezoneInput');
-    if (input) {
-        input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchTimezone();
+/* ------------------------------------------------------------------ *
+ * Overlap analysis
+ * ------------------------------------------------------------------ */
+
+/** For each hour of the planner day (in the reference zone): how many zones are working. */
+function overlapByHour() {
+    const rows = [];
+    for (let hour = 0; hour < 24; hour++) {
+        const ts = tsAtRefHour(hour);
+        const working = state.zones.filter(tz => inWorkHours(zonedParts(ts, tz).hour));
+        rows.push({ hour, ts, count: working.length, working });
+    }
+    return rows;
+}
+
+/** Longest contiguous runs at the best achievable coverage. */
+function bestWindows(rows) {
+    const best = rows.reduce((max, r) => Math.max(max, r.count), 0);
+    if (!best) return { best: 0, windows: [] };
+
+    const windows = [];
+    let run = null;
+    for (const row of rows) {
+        if (row.count === best) {
+            if (run) {
+                run.end = row.hour + 1;
+            } else {
+                run = { start: row.hour, end: row.hour + 1, ts: row.ts, working: row.working };
             }
+        } else if (run) {
+            windows.push(run);
+            run = null;
+        }
+    }
+    if (run) windows.push(run);
+
+    windows.sort((a, b) => (b.end - b.start) - (a.end - a.start));
+    return { best, windows: windows.slice(0, 3) };
+}
+
+/* ------------------------------------------------------------------ *
+ * Rendering
+ * ------------------------------------------------------------------ */
+
+function buildCard(tz) {
+    const root = document.createElement('article');
+    root.className = 'clock-card';
+    root.innerHTML = `
+        <button class="remove" type="button" title="Remove" aria-label="Remove">×</button>
+        <div class="card-head">
+            <span class="card-emoji" aria-hidden="true"></span>
+            <div class="card-titles">
+                <h2 class="card-city"></h2>
+                <p class="card-zone"></p>
+            </div>
+        </div>
+        <p class="card-time"><span class="t-main"></span><span class="t-suffix"></span></p>
+        <p class="card-date"><span class="d-text"></span><span class="d-diff"></span></p>
+        <div class="card-strip" aria-hidden="true"></div>
+        <p class="card-meta"><span class="m-offset"></span><span class="m-abbr"></span></p>
+    `;
+
+    const strip = root.querySelector('.card-strip');
+    const cells = [];
+    for (let hour = 0; hour < 24; hour++) {
+        const cell = document.createElement('i');
+        cell.className = 'cell';
+        strip.appendChild(cell);
+        cells.push(cell);
+    }
+
+    root.querySelector('.remove').addEventListener('click', () => removeZone(tz));
+
+    const node = {
+        root,
+        emoji: root.querySelector('.card-emoji'),
+        city: root.querySelector('.card-city'),
+        zone: root.querySelector('.card-zone'),
+        main: root.querySelector('.t-main'),
+        suffix: root.querySelector('.t-suffix'),
+        date: root.querySelector('.d-text'),
+        diff: root.querySelector('.d-diff'),
+        offset: root.querySelector('.m-offset'),
+        abbr: root.querySelector('.m-abbr'),
+        cells
+    };
+
+    node.emoji.textContent = zoneEmoji(tz);
+    node.city.textContent = zoneLabel(tz);
+    node.zone.textContent = zoneRegion(tz) ? `${zoneRegion(tz)} · ${tz}` : tz;
+    return node;
+}
+
+function renderCards() {
+    for (const [tz, node] of cards) {
+        if (!state.zones.includes(tz)) {
+            node.root.remove();
+            cards.delete(tz);
+        }
+    }
+    for (const tz of state.zones) {
+        if (!cards.has(tz)) cards.set(tz, buildCard(tz));
+        el.clocks.appendChild(cards.get(tz).root); // also fixes ordering
+    }
+    el.emptyState.hidden = state.zones.length > 0;
+}
+
+function updateCards() {
+    const ts = state.planTs;
+    const refDay = zonedParts(ts, refTz());
+    const withSeconds = state.live;
+
+    for (const tz of state.zones) {
+        const node = cards.get(tz);
+        const p = zonedParts(ts, tz);
+        const time = formatClock(ts, tz, withSeconds);
+        const match = /\s*(AM|PM)$/i.exec(time);
+
+        node.main.textContent = match ? time.slice(0, match.index) : time;
+        node.suffix.textContent = match ? match[1].toLowerCase() : '';
+        node.date.textContent = formatDate(ts, tz);
+
+        const diff = calendarDayDelta(p, refDay);
+        node.diff.textContent = diff === 0 ? '' : (diff > 0 ? '+1 day' : '−1 day');
+        node.diff.className = 'd-diff' + (diff === 0 ? '' : ' is-shifted');
+
+        node.offset.textContent = formatOffset(offsetMinutes(ts, tz));
+        // Only show a real abbreviation (EDT, JST…) — "GMT+9" just repeats the offset.
+        const abbr = zoneAbbr(ts, tz);
+        node.abbr.textContent = /^(GMT|UTC)/.test(abbr) ? '' : abbr;
+
+        for (let hour = 0; hour < 24; hour++) {
+            const cell = node.cells[hour];
+            const cls = 'cell ' + hourCategory(hour) + (hour === p.hour ? ' is-now' : '');
+            if (cell.className !== cls) cell.className = cls;
+        }
+
+        node.root.classList.toggle('is-working', inWorkHours(p.hour));
+        node.root.classList.toggle('is-night', hourCategory(p.hour) === 'sleep');
+    }
+}
+
+/** Whole-day difference between two sets of wall-clock parts (-1, 0 or +1). */
+function calendarDayDelta(parts, refParts) {
+    const a = Date.UTC(parts.year, parts.month - 1, parts.day);
+    const b = Date.UTC(refParts.year, refParts.month - 1, refParts.day);
+    return Math.sign(a - b);
+}
+
+function renderOverlap() {
+    const rows = overlapByHour();
+    const total = state.zones.length;
+    const currentHour = zonedParts(state.planTs, refTz()).hour;
+
+    if (el.overlapStrip.childElementCount !== 24) {
+        const frag = document.createDocumentFragment();
+        for (let hour = 0; hour < 24; hour++) {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'ocell';
+            b.addEventListener('click', () => jumpToHour(hour));
+            frag.appendChild(b);
+        }
+        el.overlapStrip.replaceChildren(frag);
+
+        const labels = document.createDocumentFragment();
+        for (let hour = 0; hour < 24; hour += 3) {
+            const s = document.createElement('span');
+            s.textContent = String(hour).padStart(2, '0');
+            labels.appendChild(s);
+        }
+        el.overlapLabels.replaceChildren(labels);
+    }
+
+    rows.forEach((row, hour) => {
+        const cell = el.overlapStrip.children[hour];
+        const ratio = total ? row.count / total : 0;
+        cell.style.setProperty('--fill', ratio.toFixed(3));
+        cell.classList.toggle('is-full', total > 0 && row.count === total);
+        cell.classList.toggle('is-empty', row.count === 0);
+        cell.classList.toggle('is-current', hour === currentHour);
+        cell.title = `${String(hour).padStart(2, '0')}:00 — ${row.count}/${total} in working hours`;
+        cell.setAttribute('aria-label', cell.title);
+    });
+
+    const { best, windows } = bestWindows(rows);
+    el.suggestions.replaceChildren();
+
+    if (!total) {
+        el.suggestions.append(hint('Add at least one city to see overlap.'));
+        return;
+    }
+
+    const heading = document.createElement('span');
+    heading.className = 'sug-label';
+    heading.textContent = best === total
+        ? 'Everyone is free:'
+        : (best === 0 ? 'No working overlap today' : `Best possible — ${best}/${total} cities:`);
+    el.suggestions.appendChild(heading);
+
+    for (const w of windows) {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'chip' + (best === total ? ' is-good' : '');
+        chip.textContent = `${formatClock(w.ts, refTz(), false)} – ${formatClock(tsAtRefHour(w.end), refTz(), false)}`;
+        chip.title = 'Jump to this window';
+        chip.addEventListener('click', () => jumpToHour(w.start));
+        el.suggestions.appendChild(chip);
+    }
+}
+
+/** The instant at `hour` on the planner day in the reference zone (24 rolls to the next day). */
+function tsAtRefHour(hour) {
+    const p = zonedParts(state.planTs, refTz());
+    return zonedToTs(p.year, p.month, p.day, hour, 0, refTz());
+}
+
+function hint(text) {
+    const s = document.createElement('span');
+    s.className = 'sug-label';
+    s.textContent = text;
+    return s;
+}
+
+function jumpToHour(hour) {
+    state.planTs = tsAtRefHour(hour);
+    setLive(false);
+    syncControlsFromPlanTs();
+    render();
+}
+
+function renderReadout() {
+    el.planTime.textContent = formatClock(state.planTs, refTz(), state.live);
+    el.planZoneLabel.textContent = `${zoneLabel(refTz())} · ${formatDate(state.planTs, refTz())}`;
+}
+
+function renderRefOptions() {
+    const options = [...new Set([DEVICE_TZ, ...state.zones])];
+    const frag = document.createDocumentFragment();
+    for (const tz of options) {
+        const option = document.createElement('option');
+        option.value = tz;
+        option.textContent = tz === DEVICE_TZ ? `${zoneLabel(tz)} (your device)` : zoneLabel(tz);
+        frag.appendChild(option);
+    }
+    el.refZone.replaceChildren(frag);
+    if (!options.includes(state.refZone)) state.refZone = DEVICE_TZ;
+    el.refZone.value = state.refZone;
+}
+
+function render() {
+    renderCards();
+    updateCards();
+    renderOverlap();
+    renderReadout();
+}
+
+/* ------------------------------------------------------------------ *
+ * Actions
+ * ------------------------------------------------------------------ */
+
+function addZone(tz) {
+    if (state.zones.includes(tz)) {
+        toast(`${zoneLabel(tz)} is already on the board`);
+        return;
+    }
+    state.zones.push(tz);
+    save();
+    renderRefOptions();
+    render();
+    toast(`Added ${zoneLabel(tz)}`);
+}
+
+function removeZone(tz) {
+    state.zones = state.zones.filter(z => z !== tz);
+    save();
+    renderRefOptions();
+    render();
+}
+
+function copySummary() {
+    if (!state.zones.length) return;
+    const lines = [`Meeting time — ${formatDate(state.planTs, refTz())}`];
+    const width = Math.max(...state.zones.map(tz => zoneLabel(tz).length));
+    for (const tz of state.zones) {
+        const p = zonedParts(state.planTs, tz);
+        const flag = inWorkHours(p.hour) ? '' : (hourCategory(p.hour) === 'sleep' ? '  (asleep)' : '  (off hours)');
+        lines.push(`• ${zoneLabel(tz).padEnd(width)}  ${formatClock(state.planTs, tz, false)}  ${formatDate(state.planTs, tz)}${flag}`);
+    }
+    const text = lines.join('\n');
+
+    const done = () => toast('Summary copied to clipboard');
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, done));
+    } else {
+        fallbackCopy(text, done);
+    }
+}
+
+function fallbackCopy(text, done) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+        document.execCommand('copy');
+        done();
+    } catch {
+        toast('Copy failed — select the text manually');
+    }
+    ta.remove();
+}
+
+let toastTimer = null;
+function toast(message) {
+    el.toast.textContent = message;
+    el.toast.classList.add('is-visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.toast.classList.remove('is-visible'), 2200);
+}
+
+function applyTheme() {
+    document.documentElement.dataset.theme = state.theme;
+    el.themeBtn.textContent = state.theme === 'dark' ? '☾' : '☀';
+}
+
+/* ------------------------------------------------------------------ *
+ * Wiring
+ * ------------------------------------------------------------------ */
+
+function fillHourSelects() {
+    for (const select of [el.workStart, el.workEnd]) {
+        const frag = document.createDocumentFragment();
+        for (let hour = 0; hour < 24; hour++) {
+            const option = document.createElement('option');
+            option.value = String(hour);
+            option.textContent = String(hour).padStart(2, '0') + ':00';
+            frag.appendChild(option);
+        }
+        select.replaceChildren(frag);
+    }
+    el.workStart.value = String(state.workStart);
+    el.workEnd.value = String(state.workEnd);
+}
+
+function bind() {
+    el.addForm.addEventListener('submit', e => {
+        e.preventDefault();
+        const tz = resolveQuery(el.zoneInput.value);
+        if (!tz) {
+            toast(`No time zone matches “${el.zoneInput.value.trim()}”`);
+            return;
+        }
+        el.zoneInput.value = '';
+        addZone(tz);
+    });
+
+    el.resetBtn.addEventListener('click', () => {
+        state.zones = defaultZones();
+        state.refZone = DEVICE_TZ;
+        save();
+        renderRefOptions();
+        setLive(true);
+        syncControlsFromPlanTs();
+        render();
+        toast('Reset to defaults');
+    });
+
+    el.copyBtn.addEventListener('click', copySummary);
+
+    el.formatBtn.addEventListener('click', () => {
+        state.hour12 = !state.hour12;
+        el.formatBtn.textContent = state.hour12 ? '12h' : '24h';
+        save();
+        render();
+    });
+
+    el.themeBtn.addEventListener('click', () => {
+        state.theme = state.theme === 'dark' ? 'light' : 'dark';
+        applyTheme();
+        save();
+    });
+
+    el.refZone.addEventListener('change', () => {
+        state.refZone = el.refZone.value;
+        save();
+        syncControlsFromPlanTs();
+        render();
+    });
+
+    el.planSlider.addEventListener('input', () => {
+        state.planTs = planTsFromControls();
+        if (state.live) setLive(false);
+        else render();
+    });
+
+    el.planDate.addEventListener('change', () => {
+        state.planTs = planTsFromControls();
+        if (state.live) setLive(false);
+        else render();
+    });
+
+    el.nowBtn.addEventListener('click', () => {
+        setLive(true);
+        syncControlsFromPlanTs();
+        render();
+    });
+
+    for (const select of [el.workStart, el.workEnd]) {
+        select.addEventListener('change', () => {
+            state.workStart = Number(el.workStart.value);
+            state.workEnd = Number(el.workEnd.value);
+            save();
+            render();
         });
     }
-    initializeDefault();
-});
+
+    document.addEventListener('keydown', e => {
+        if (e.target.matches('input, select, textarea')) return;
+        if (e.key === 'n' || e.key === 'N') el.nowBtn.click();
+        if (e.key === '/') {
+            e.preventDefault();
+            el.zoneInput.focus();
+        }
+    });
+}
+
+function tick() {
+    if (!state.live) return;
+    state.planTs = Date.now();
+    syncControlsFromPlanTs();
+    updateCards();
+    renderReadout();
+}
+
+function init() {
+    for (const id of ['refZone', 'planDate', 'planSlider', 'planTime', 'planZoneLabel', 'nowBtn',
+        'overlapStrip', 'overlapLabels', 'suggestions', 'workStart', 'workEnd', 'addForm',
+        'zoneInput', 'zoneList', 'copyBtn', 'resetBtn', 'formatBtn', 'themeBtn', 'clocks',
+        'emptyState', 'toast']) {
+        el[id] = document.getElementById(id);
+    }
+
+    load();
+    applyTheme();
+    el.formatBtn.textContent = state.hour12 ? '12h' : '24h';
+    fillHourSelects();
+    fillDatalist();
+    renderRefOptions();
+    bind();
+
+    state.planTs = Date.now();
+    syncControlsFromPlanTs();
+    setLive(true);
+
+    setInterval(tick, 1000);
+    // Overlap only shifts as the day moves — refresh it on the minute.
+    setInterval(() => {
+        if (state.live) renderOverlap();
+    }, 60000);
+}
+
+document.addEventListener('DOMContentLoaded', init);
