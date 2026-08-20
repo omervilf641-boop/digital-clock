@@ -167,6 +167,23 @@ Each area brings its own puzzles, and the new ones ask for a bit more than the l
 
 Areas unlock as friends are collected, and the album keeps its silhouettes until you meet each one.
 
+### Who you are
+
+The first time you play, you build a character: skin tone, one of five hairstyles, hair colour,
+shirt colour, and a name you type in. Every option is a tap on a picture of itself — no English
+words, no dropdowns — and the figure updates live as you choose. That character then walks around
+the island with you and stands on the title screen.
+
+### Going for a walk
+
+The map has a **לָצֵאת לְטִיּוּל** button. Pick one of the friends you've caught and the two of you
+set off across a scrolling landscape while flowers, butterflies, shells and crystals drift past.
+Tap whatever you want to keep; it goes into your bag, which is shown on the map and kept forever.
+Six finds and you arrive at a picnic. Anything you don't tap simply carries on by — nothing here
+can be missed or lost, and you can turn back at any moment.
+
+Walking together cheers the friend up, so it's the third way to look after them.
+
 ### Looking after them
 
 Every friend you catch has three needs — fed, happy, rested — that drift down slowly over real
@@ -178,8 +195,8 @@ The Tamagotchi guilt loop is deliberately absent. A need never falls below 1, a 
 more than a day away does, nothing ever gets sick or dies, and the worst thing a creature will say
 is that it's a little hungry. The album nudges only when someone is genuinely low.
 
-Progress is saved in `localStorage`; the 🔊, 🗣️ and ↺ buttons on the title screen toggle sound,
-speech, and start over. No build step and no dependencies — `game.html`, `game.css`, `game.js`,
+Progress — friends, their needs, your character and your bag — is saved in `localStorage`; the 🔊,
+🗣️ and ↺ buttons on the title screen toggle sound, speech, and start over. No build step and no dependencies — `game.html`, `game.css`, `game.js`,
 plus one webfont that falls back cleanly when offline.
 
 ## License
