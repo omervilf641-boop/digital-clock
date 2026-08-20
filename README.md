@@ -165,7 +165,18 @@ Each area brings its own puzzles, and the new ones ask for a bit more than the l
 | ☁️ ענני הסוכר | **addition** — two groups, sums to 10 |
 | 🤖 עיר הרובוטים | **memory** (what vanished) and **first letters** of Hebrew words |
 
-Areas unlock as friends are collected, and the album keeps its silhouettes until you meet each one.
+Areas unlock as friends are collected, and the album — grouped by area, with a count per group —
+keeps its silhouettes until you meet each one.
+
+### Who's playing
+
+Up to three players share the device, each with their own island: collection, character, shells,
+purchases, room, and difficulty level. A picker on startup shows each player's character and how
+many friends they've found; 👥 on the title screen switches between them. A save from before
+profiles existed becomes player one.
+
+Difficulty is per player, so an older sibling racing ahead doesn't hand the younger one level-3
+puzzles.
 
 ### Who you are
 
@@ -212,6 +223,21 @@ And on any given walk there's a **10% chance** of meeting one of three creatures
 at all — זְהַבְהָב, קַשְׁתּוֹנִי, לַיְלוֹנִי. They drift past glowing, and befriending one takes **two puzzles
 instead of one**, drawn from every type in the game. Their album cards say only that they might turn
 up on a walk. Once all three are found, no more sightings occur.
+
+### A room of your own
+
+Everything found on a walk that isn't a shell used to become a number on the map and nothing more.
+🏡 **הַחֶדֶר שֶׁלִּי** gives it somewhere to go: an eight-slot shelf where treasures and the dolls you
+bought get displayed, with your character standing on the rug below. Tap something in the tray to
+put it on the shelf, tap it on the shelf to take it back. No dragging — a five-year-old shouldn't
+have to fight the interface. Shells stay out of it; money isn't an ornament.
+
+### When an area is finished
+
+Once every friend in an area is found, going back pays **2–3 shells** for a solved puzzle instead of
+handing over a duplicate. All seven places stay worth visiting, and there's a second way to earn
+besides walking. 🎲 **הַפְתִּיעוּ אוֹתִי** picks an unlocked area at random for when choosing is the
+hard part.
 
 ### Looking after them
 

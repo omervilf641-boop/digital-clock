@@ -21,8 +21,15 @@
 
 <main class="game" id="game">
 
+    <!-- ------------------------------------------------ מי משחק -->
+    <section class="screen screen-who" id="screenWho">
+        <h1 class="who-title">מִי מְשַׂחֵק?</h1>
+        <div class="who-grid" id="whoGrid"></div>
+        <p class="who-note">כָּל אֶחָד וְהָאִי שֶׁלּוֹ — אוֹסֶף, צְדָפִים וְחֶדֶר מִשֶּׁלּוֹ.</p>
+    </section>
+
     <!-- ------------------------------------------------ מסך פתיחה -->
-    <section class="screen screen-title is-on" id="screenTitle">
+    <section class="screen screen-title" id="screenTitle">
         <div class="title-art" id="titleArt" aria-hidden="true"></div>
         <h1 class="game-title">אי הַחַבְרֵזִים</h1>
         <p class="game-sub">טיילו באי, פתרו חידה קטנה &mdash; וקבלו חבר חדש!</p>
@@ -38,6 +45,7 @@
         <div class="title-tools">
             <button class="tool" id="soundBtn" type="button" aria-pressed="true" title="צלילים">🔊</button>
             <button class="tool" id="voiceBtn" type="button" aria-pressed="true" title="הקראה">🗣️</button>
+            <button class="tool" id="whoBtn" type="button" title="להחליף שחקן">👥</button>
             <button class="tool" id="resetBtn" type="button" title="להתחיל מהתחלה">↺</button>
         </div>
     </section>
@@ -49,11 +57,17 @@
             <p class="bar-title">לְאָן נֵלֵךְ?</p>
             <button class="tool" data-goto="album" type="button" title="האלבום שלי">📔</button>
         </header>
+        <button class="big-btn room-btn" id="roomBtn" type="button">
+            <span class="btn-emoji" aria-hidden="true">🏡</span> הַחֶדֶר שֶׁלִּי
+        </button>
         <button class="big-btn shop-btn" id="shopBtn" type="button">
             <span class="btn-emoji" aria-hidden="true">🏪</span> הַחֲנוּת
         </button>
         <button class="big-btn walk-btn" id="walkBtn" type="button">
             <span class="btn-emoji" aria-hidden="true">🚶</span> לָצֵאת לְטִיּוּל
+        </button>
+        <button class="big-btn dice-btn" id="diceBtn" type="button">
+            <span class="btn-emoji" aria-hidden="true">🎲</span> הַפְתִּיעוּ אוֹתִי
         </button>
         <div class="map-grid" id="mapGrid"></div>
         <p class="score-line" id="scoreLine"></p>
@@ -121,6 +135,27 @@
 
         <p class="speech walk-speech" id="walkSpeech"></p>
         <div class="walk-end" id="walkEnd"></div>
+    </section>
+
+    <!-- ------------------------------------------------ החדר -->
+    <section class="screen screen-room" id="screenRoom">
+        <header class="bar">
+            <button class="tool" data-goto="map" type="button" title="חזרה למפה">🗺️</button>
+            <p class="bar-title" id="roomTitle"></p>
+            <button class="tool" data-goto="title" type="button" title="הבית">🏠</button>
+        </header>
+
+        <div class="room" id="room">
+            <div class="room-window" aria-hidden="true"></div>
+            <div class="room-shelf" id="roomShelf"></div>
+            <div class="room-floor">
+                <div class="room-rug" aria-hidden="true"></div>
+                <div class="room-hero" id="roomHero" aria-hidden="true"></div>
+            </div>
+        </div>
+
+        <p class="panel-q" id="roomHint"></p>
+        <div class="tray" id="roomTray"></div>
     </section>
 
     <!-- ------------------------------------------------ החנות -->
