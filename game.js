@@ -22,7 +22,8 @@
         star:    { label: 'כוכב',  emoji: '⭐', food: '🍯' },
         crystal: { label: 'גביש',  emoji: '💎', food: '🧊' },
         sweet:   { label: 'מתוק',  emoji: '🍬', food: '🍭' },
-        spark:   { label: 'חשמל',  emoji: '⚡', food: '🔋' }
+        spark:   { label: 'חשמל',  emoji: '⚡', food: '🔋' },
+        rare:    { label: 'נדיר',  emoji: '✨', food: '🍰' }
     };
 
     var CREATURES = [
@@ -101,7 +102,18 @@
           fact: 'בורגי מסדר את כל הברגים בעיר לפי גודל.' },
         { id: 'chashmali', nik: 'חַשְׁמַלִּי', name: 'חשמלי', area: 'robots', type: 'spark',
           body: '#ffe14d', belly: '#fffbd6', dark: '#d9b81c', ears: 'pointy', extra: 'antenna',
-          fact: 'חשמלי מטעין את כל הצעצועים בעיר בלחיצת יד.' }
+          fact: 'חשמלי מטעין את כל הצעצועים בעיר בלחיצת יד.' },
+
+        /* --- נדירים: לא גרים באף אזור, ונפגשים רק במקרה בטיול --- */
+        { id: 'zehavhav', nik: 'זְהַבְהָב', name: 'זהבהב', area: 'rare', type: 'rare',
+          body: '#ffd54a', belly: '#fff6d4', dark: '#d9a41c', ears: 'pointy', extra: 'antenna',
+          fact: 'זהבהב נוצץ בשמש, ולכן קשה מאוד למצוא אותו.' },
+        { id: 'kashtoni', nik: 'קַשְׁתּוֹנִי', name: 'קשתוני', area: 'rare', type: 'rare',
+          body: '#ff9ad9', belly: '#fff0fa', dark: '#c95bab', ears: 'leaf', pattern: 'stripes',
+          fact: 'קשתוני מחליף צבע לפי מצב הרוח, ותמיד בצבעי הקשת.' },
+        { id: 'layloni', nik: 'לַיְלוֹנִי', name: 'לילוני', area: 'rare', type: 'rare',
+          body: '#5b6bb5', belly: '#dbe3ff', dark: '#39468a', ears: 'floppy', pattern: 'spots',
+          fact: 'לילוני ישן כל היום ויוצא לטייל רק כשיש כוכבים.' }
     ];
 
     /* לכל אזור רשימת חידות משלו. אזור חדש מציג סוג חידה חדש וקשה יותר,
@@ -190,6 +202,47 @@
           } }
     ];
 
+    /* בובה קטנה, בתיבת צירים 0..60, שאפשר לשתול על גוף החברז */
+    function plush(opts) {
+        var ears = opts.ears === 'long'
+            ? '<ellipse cx="19" cy="9" rx="6" ry="13" fill="' + opts.body + '"/>' +
+              '<ellipse cx="41" cy="9" rx="6" ry="13" fill="' + opts.body + '"/>'
+            : '<circle cx="15" cy="17" r="9" fill="' + opts.body + '"/>' +
+              '<circle cx="45" cy="17" r="9" fill="' + opts.body + '"/>';
+
+        var body = opts.star
+            ? '<polygon points="30,8 37,26 56,27 41,38 47,56 30,45 13,56 19,38 4,27 23,26" fill="' + opts.body + '"/>'
+            : '<circle cx="30" cy="33" r="20" fill="' + opts.body + '"/>' +
+              '<ellipse cx="30" cy="41" rx="11" ry="9" fill="' + opts.belly + '"/>';
+
+        return (opts.star ? '' : ears) + body +
+            '<circle cx="24" cy="29" r="3" fill="#1f2a52"/>' +
+            '<circle cx="36" cy="29" r="3" fill="#1f2a52"/>' +
+            '<path d="M26 37 q4 4 8 0" stroke="' + opts.dark +
+            '" stroke-width="2.2" fill="none" stroke-linecap="round"/>';
+    }
+
+    /* בובות נמכרות בנפרד, אבל הן אביזר רגיל לכל דבר — משבצת יד */
+    var DOLLS = [
+        { id: 'doll_teddy',  nik: 'בֻּבַּת דֻּבִּי',   say: 'בובת דובי',  price: 6,
+          look: { body: '#c9915f', belly: '#f0dcc4', dark: '#8d5a3b' } },
+        { id: 'doll_bunny',  nik: 'בֻּבַּת אַרְנָב',  say: 'בובת ארנב',  price: 6,
+          look: { body: '#ffb8d9', belly: '#fff0f7', dark: '#e2699d', ears: 'long' } },
+        { id: 'doll_friend', nik: 'בֻּבַּת חַבְרֵז',  say: 'בובת חברז',  price: 7,
+          look: { body: '#7ec8ff', belly: '#e8f6ff', dark: '#3a86c9' } },
+        { id: 'doll_star',   nik: 'בֻּבַּת כּוֹכָב',  say: 'בובת כוכב',  price: 7,
+          look: { body: '#ffd93d', belly: '#fff6cf', dark: '#d9ac16', star: true } }
+    ].map(function (doll) {
+        doll.slot = 'hand';
+        doll.isDoll = true;
+        doll.draw = function () {
+            return '<g transform="translate(84 58) scale(0.5)">' + plush(doll.look) + '</g>';
+        };
+        return doll;
+    });
+
+    ACCESSORIES = ACCESSORIES.concat(DOLLS);
+
     var SLOTS = ['head', 'face', 'neck', 'hand'];
 
     function accessoryById(id) {
@@ -247,6 +300,12 @@
 
     function inArea(areaId) {
         return CREATURES.filter(function (c) { return c.area === areaId; });
+    }
+
+    function isRare(c) { return c.area === 'rare'; }
+
+    function rarePool() {
+        return CREATURES.filter(function (c) { return isRare(c) && !isCaught(c.id); });
     }
 
     function isCaught(id) { return state.caught.indexOf(id) !== -1; }
@@ -1133,7 +1192,7 @@
 
     /* כל אזור מגריל מתוך החידות שלו בלבד */
     function makePuzzle(area) {
-        var names = (area && area.puzzles) || ['same', 'count', 'color', 'size'];
+        var names = (area && area.puzzles) || Object.keys(MAKERS);
         return MAKERS[pick(names)](level());
     }
 
@@ -1148,7 +1207,10 @@
         var replay = pool.length === 0;
         var creature = replay ? pick(inArea(area.id)) : pick(pool);
 
-        current = { area: area, creature: creature, puzzle: makePuzzle(area), solved: false, replay: replay };
+        current = {
+            area: area, creature: creature, puzzle: makePuzzle(area),
+            solved: false, replay: replay, left: 1
+        };
 
         $('areaName').textContent = area.nik;
         $('catchZone').hidden = true;
@@ -1248,6 +1310,7 @@
 
     function answer(choice, btn, choicesBox) {
         if (current.solved) return;
+        if (choicesBox.classList.contains('is-waiting')) return;
 
         if (!choice.correct) {
             /* אין עונש, אין הפסד — רק עידוד */
@@ -1262,12 +1325,28 @@
             return;
         }
 
-        current.solved = true;
         sfx.good();
-        confetti(18);
         btn.classList.add('is-right');
         Array.prototype.forEach.call(choicesBox.children, function (node) { node.disabled = true; });
         $('creatureSlot').className = 'creature-slot is-happy';
+
+        current.left--;
+
+        /* חברז נדיר מבקש שתי חידות, לא אחת */
+        if (current.left > 0) {
+            confetti(12);
+            $('speech').textContent = 'יָפֶה! וְעוֹד חִידָה אַחַת אַחֲרוֹנָה...';
+            say('יפה מאוד! ועוד חידה אחת אחרונה');
+            setTimeout(function () {
+                current.puzzle = makePuzzle(current.area);
+                renderPuzzle();
+                say(current.puzzle.speak);
+            }, 1400);
+            return;
+        }
+
+        current.solved = true;
+        confetti(18);
         $('speech').textContent = 'יֵשׁ! נָכוֹן מְאוֹד!';
 
         $('catchZone').hidden = false;
@@ -1311,14 +1390,19 @@
         var box = $('puzzle');
         box.innerHTML = '';
 
+        var rare = isRare(current.creature);
+
         var again = document.createElement('button');
         again.type = 'button';
         again.className = 'big-btn';
-        again.innerHTML = '<span class="btn-emoji">✨</span> עוֹד חָבֵר!';
-        again.addEventListener('click', function () {
-            sfx.tap();
-            startEncounter(current.area);
-        });
+        if (rare) {
+            /* נדיר נפגש רק במקרה בטיול — אין "עוד אחד" ליד */
+            again.innerHTML = '<span class="btn-emoji">🚶</span> עוֹד טִיּוּל';
+            again.addEventListener('click', function () { sfx.tap(); openWalkPicker(); });
+        } else {
+            again.innerHTML = '<span class="btn-emoji">✨</span> עוֹד חָבֵר!';
+            again.addEventListener('click', function () { sfx.tap(); startEncounter(current.area); });
+        }
 
         var toMap = document.createElement('button');
         toMap.type = 'button';
@@ -1380,7 +1464,9 @@
             : 'שָׁלוֹם! צְאוּ לְטִיּוּל וְאִסְפוּ צְדָפִים, וְאָז נִסְתַּדֵּר.';
         $('shopSpeech').textContent = line;
 
-        buildShelf($('shelfWear'), 'אֲבִיזָרִים לַחֲבֵרִים', ACCESSORIES.map(function (item) {
+        buildShelf($('shelfWear'), 'אֲבִיזָרִים לַחֲבֵרִים', ACCESSORIES.filter(function (item) {
+            return !item.isDoll;
+        }).map(function (item) {
             return {
                 key: item.id,
                 nik: item.nik,
@@ -1388,6 +1474,10 @@
                 price: item.price,
                 art: previewSVG(item)
             };
+        }));
+
+        buildShelf($('shelfDolls'), 'בֻּבּוֹת', DOLLS.map(function (item) {
+            return { key: item.id, nik: item.nik, say: item.say, price: item.price, art: previewSVG(item) };
         }));
 
         buildShelf($('shelfHair'), 'תִּסְפֹּרֶת בִּשְׁבִילִי', Object.keys(HAIR_SHOP).map(function (style) {
@@ -1481,7 +1571,7 @@
         { emoji: '💎', nik: 'גָּבִישׁ',   say: 'גביש' }
     ];
 
-    var walk = { on: false, id: null, found: [], timer: null, chatter: null };
+    var walk = { on: false, id: null, found: [], timer: null, chatter: null, rareAt: -1, seen: 0 };
 
     /* בוחרים חברז לטיול */
     function openWalkPicker() {
@@ -1518,13 +1608,17 @@
     }
 
     function startWalk(id) {
-        walk = { on: true, id: id, found: [], timer: null, chatter: null };
+        walk = { on: true, id: id, found: [], timer: null, chatter: null, rareAt: -1, seen: 0 };
         var c = byId(id);
 
         $('walkTitle').textContent = 'טִיּוּל עִם ' + c.nik;
         $('walkCount').textContent = '';
         $('walkEnd').innerHTML = '';
         $('walkItems').innerHTML = '';
+        $('walkScene').classList.remove('is-picnic');
+        $('walkers').classList.remove('is-sitting');
+        var oldSpread = $('walkScene').querySelector('.picnic');
+        if (oldSpread) oldSpread.remove();
         $('walkers').innerHTML =
             '<span class="walker walker-hero">' + heroSVG(state.hero) + '</span>' +
             '<span class="walker walker-pet">' + creatureSVG(c) + '</span>';
@@ -1533,6 +1627,7 @@
         show('walk');
         say('יאללה, הולכים! תלחצו על מה שרוצים לאסוף');
 
+        rollRare();
         walk.timer = setInterval(spawnTreasure, 1900);
         walk.chatter = setInterval(walkChatter, 9000);
         setTimeout(spawnTreasure, 700);
@@ -1559,8 +1654,23 @@
         say(line.replace(/[֑-ׇ]/g, ''));
     }
 
+    var RARE_CHANCE = 0.05;
+
+    /* ההגרלה היא פעם אחת לכל טיול, לא לכל הופעה — חמישה אחוזים שהטיול
+       הזה הוא הטיול שבו פוגשים נדיר. אם כן, מגרילים גם באיזה רגע בדיוק. */
+    function rollRare() {
+        walk.rareAt = (Math.random() < RARE_CHANCE && rarePool().length) ? rand(2, 6) : -1;
+        walk.seen = 0;
+    }
+
     function spawnTreasure() {
         if (!walk.on) return;
+
+        walk.seen++;
+        if (walk.seen === walk.rareAt && rarePool().length) {
+            spawnRare();
+            return;
+        }
 
         /* צדפים הם הכסף, אז הם נופלים תכופות יותר משאר המזכרות */
         var treasure = Math.random() < 0.42
@@ -1586,6 +1696,57 @@
         $('walkItems').appendChild(node);
     }
 
+    function spawnRare() {
+        var creature = pick(rarePool());
+
+        var node = document.createElement('button');
+        node.type = 'button';
+        node.className = 'treasure rare-sighting';
+        node.innerHTML = '<span class="sparkle">✨</span>' + creatureSVG(creature);
+        node.setAttribute('aria-label', 'חברז נדיר');
+        node.style.bottom = rand(24, 44) + '%';
+        node.style.animationDuration = '9s';        /* איטי, שיהיה זמן להבחין */
+
+        node.addEventListener('click', function () {
+            if (node.classList.contains('is-taken')) return;
+            node.classList.add('is-taken');
+            meetRare(creature);
+        });
+        node.addEventListener('animationend', function () { node.remove(); });
+
+        sfx.star();
+        $('walkSpeech').textContent = 'מָה זֶה שָׁם?! מַשֶּׁהוּ נוֹצֵץ...';
+        say('מה זה שם? משהו נוצץ! מהרו ולחצו עליו');
+
+        $('walkItems').appendChild(node);
+    }
+
+    /* פגישה עם נדיר: אותו מסך, אבל שתי חידות במקום אחת */
+    function meetRare(creature) {
+        stopWalk();
+
+        current = {
+            area: { id: 'rare', nik: 'מִפְגָּשׁ נָדִיר', name: 'מפגש נדיר', puzzles: null },
+            creature: creature, puzzle: makePuzzle(null),
+            solved: false, replay: false, left: 2
+        };
+
+        $('areaName').textContent = '✨ מִפְגָּשׁ נָדִיר ✨';
+        $('catchZone').hidden = true;
+
+        var slot = $('creatureSlot');
+        slot.className = 'creature-slot';
+        slot.innerHTML = creatureSVG(creature);
+
+        $('speech').textContent = 'אֲנִי ' + creature.nik + ', וַאֲנִי נָדִיר מְאוֹד! ' +
+                                  'פִּתְרוּ שְׁתֵּי חִידוֹת וְאָבוֹא אִתְּכֶם.';
+        show('play');
+        renderPuzzle();
+        confetti(24);
+        say('אני ' + creature.name + ', ואני נדיר מאוד! פתרו שתי חידות ואבוא איתכם. ' +
+            current.puzzle.speak);
+    }
+
     function collect(treasure) {
         walk.found.push(treasure);
         state.treasures[treasure.emoji] = (state.treasures[treasure.emoji] || 0) + 1;
@@ -1605,6 +1766,31 @@
         if (walk.found.length >= 6) endWalk(true);
     }
 
+    /* פורסים שמיכה, מוציאים סל, ומתיישבים */
+    function layPicnic(c) {
+        var scene = $('walkScene');
+        scene.classList.add('is-picnic');
+
+        var spread = document.createElement('div');
+        spread.className = 'picnic';
+        spread.innerHTML =
+            '<div class="blanket"></div>' +
+            '<div class="basket" aria-hidden="true">🧺</div>' +
+            '<div class="picnic-food" aria-hidden="true">' +
+            ['🍉', '🥪', '🍇', '🧃', '🍪'].map(function (food, i) {
+                return '<span style="animation-delay:' + (i * 0.12) + 's">' + food + '</span>';
+            }).join('') +
+            '</div>';
+        scene.appendChild(spread);
+
+        /* היושבים עוברים למרכז ומפסיקים לצעוד */
+        var walkers = $('walkers');
+        walkers.classList.add('is-sitting');
+        walkers.innerHTML =
+            '<span class="walker walker-hero">' + heroSVG(state.hero) + '</span>' +
+            '<span class="walker walker-pet">' + creatureSVG(c) + '</span>';
+    }
+
     function endWalk(arrived) {
         if (!walk.on) return;
         stopWalk();
@@ -1616,11 +1802,13 @@
 
         if (arrived) {
             state.treasures[COIN] = coins() + 2;   /* בונוס הגעה, כדי שכל טיול משתלם */
+            feed(walk.id, 2);                      /* בפיקניק באמת אוכלים */
             save();
+            layPicnic(c);
         }
 
         var line = arrived
-            ? 'הִגַּעְנוּ לַפִּיקְנִיק! קִבַּלְתֶּם 2 צְדָפִים בְּמַתָּנָה.'
+            ? 'פִּיקְנִיק! אָכַלְנוּ יַחַד וְקִבַּלְתֶּם 2 צְדָפִים.'
             : 'טִיּוּל נָעִים, תּוֹדָה!';
         $('walkSpeech').textContent = c.nik + ': ' + line;
         say(line.replace(/[֑-ׇ]/g, ''));
@@ -1914,6 +2102,12 @@
                 if (!have) {
                     sfx.oops();
                     var area = AREAS.filter(function (a) { return a.id === c.area; })[0];
+                    if (!area) {
+                        /* הנדירים לא גרים באף מקום */
+                        $('albumNote').textContent = 'זֶה חַבְרֵז נָדִיר מְאוֹד. אוּלַי תִּפְגְּשׁוּ אוֹתוֹ בְּטִיּוּל... ✨';
+                        say('זה חברז נדיר מאוד. אולי תפגשו אותו בטיול');
+                        return;
+                    }
                     $('albumNote').textContent = 'עוֹד לֹא פָּגַשְׁתֶּם אוֹתוֹ. חַפְּשׂוּ בְּ' + area.nik + '!';
                     say('עוד לא פגשתם אותו. חפשו ב' + area.name);
                     return;
@@ -2034,7 +2228,9 @@
         CREATURES: CREATURES, AREAS: AREAS, state: state,
         makePuzzle: makePuzzle, settle: settle, mood: mood, isAsking: isAsking, needsCare: needsCare,
         TREASURES: TREASURES, heroSVG: heroSVG,
-        ACCESSORIES: ACCESSORIES, HAIR_SHOP: HAIR_SHOP, coins: coins, owns: owns
+        ACCESSORIES: ACCESSORIES, DOLLS: DOLLS, HAIR_SHOP: HAIR_SHOP,
+        coins: coins, owns: owns, rarePool: rarePool, meetRare: meetRare,
+        RARE_CHANCE: RARE_CHANCE
     };
 
 })();

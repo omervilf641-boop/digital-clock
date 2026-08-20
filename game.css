@@ -1137,3 +1137,83 @@ body {
     inset-inline-end: 4px;
     font-size: 15px;
 }
+
+/* ------------------------------------------------------------------ *
+ * חברז נדיר בטיול
+ * ------------------------------------------------------------------ */
+
+.rare-sighting {
+    padding: 0;
+    filter: drop-shadow(0 0 12px rgba(255, 217, 61, 0.95));
+}
+
+.rare-sighting svg { width: clamp(56px, 15vw, 76px); height: auto; display: block; }
+
+.rare-sighting .sparkle {
+    position: absolute;
+    inset-block-start: -10px;
+    inset-inline-end: -6px;
+    font-size: 26px;
+    animation: twinkle 0.9s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+    0%, 100% { transform: scale(1) rotate(0); opacity: 1; }
+    50%      { transform: scale(1.35) rotate(18deg); opacity: 0.75; }
+}
+
+/* ------------------------------------------------------------------ *
+ * הפיקניק
+ * ------------------------------------------------------------------ */
+
+.walk-scene.is-picnic .walk-ground,
+.walk-scene.is-picnic .walk-hills { animation-play-state: paused; }
+
+.picnic {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 6%;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    animation: pop-in 0.5s ease both;
+}
+
+.blanket {
+    width: min(78%, 300px);
+    height: clamp(74px, 15vh, 104px);
+    border-radius: 14px;
+    background:
+        repeating-conic-gradient(#ff8fa8 0 25%, #fff0f3 0 50%) 0 0 / 26px 26px;
+    box-shadow: 0 6px 14px rgba(31, 42, 82, 0.22);
+    transform: perspective(300px) rotateX(46deg);
+}
+
+.basket {
+    position: absolute;
+    inset-inline-end: 14%;
+    bottom: 34%;
+    font-size: clamp(30px, 8vw, 42px);
+    animation: pop-in 0.5s ease 0.15s both;
+}
+
+.picnic-food {
+    position: absolute;
+    bottom: 26%;
+    display: flex;
+    gap: clamp(4px, 2vw, 12px);
+}
+
+.picnic-food span {
+    font-size: clamp(20px, 5.5vw, 28px);
+    animation: pop-in 0.4s ease both;
+}
+
+.walkers.is-sitting {
+    inset-inline-start: 50%;
+    transform: translateX(50%);
+    bottom: 20%;
+    z-index: 2;
+}
+
+.walkers.is-sitting .walker svg { animation: bob 2.6s ease-in-out infinite; }

@@ -147,7 +147,7 @@ five- or six-year-old. Open it directly:
 open game.html      # or: python3 -m http.server 8000  →  localhost:8000/game.html
 ```
 
-Twenty-one original creatures live across seven areas. Meeting one means solving a single tiny
+Twenty-four original creatures — twenty-one across seven areas, and three rare ones that live nowhere. Meeting one means solving a single tiny
 puzzle and then throwing a friendship star. The rules that matter are the ones about being five:
 
 - **Nothing can be lost.** A wrong tap is answered with "almost, try again", never with a failure.
@@ -196,9 +196,22 @@ occupies one slot (head, face, neck, hand), so a friend can wear a crown, glasse
 once. Tap an item on their care screen to put it on, tap again to take it off; whatever they're
 wearing follows them into the album, onto walks, and into every puzzle.
 
+There are four **dolls** too — teddy, bunny, a little chavrez, a star — sold on their own shelf. A
+doll is just an accessory that happens to be a plush, so a friend carries theirs everywhere.
+
 Nothing here can go wrong either: prices are checked before a purchase, there's no debt, everything
 bought is kept forever, and being short is answered with how many more shells to find rather than a
 refusal.
+
+### The picnic, and what might turn up on the way
+
+Arriving lays an actual picnic: a checked blanket, a basket, food, and the two of you sitting down
+to eat together — the friend you brought is fed, not just cheered.
+
+And on any given walk there's a **5% chance** of meeting one of three creatures that live in no area
+at all — זְהַבְהָב, קַשְׁתּוֹנִי, לַיְלוֹנִי. They drift past glowing, and befriending one takes **two puzzles
+instead of one**, drawn from every type in the game. Their album cards say only that they might turn
+up on a walk. Once all three are found, no more sightings occur.
 
 ### Looking after them
 
