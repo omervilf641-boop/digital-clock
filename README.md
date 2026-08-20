@@ -208,7 +208,7 @@ refusal.
 Arriving lays an actual picnic: a checked blanket, a basket, food, and the two of you sitting down
 to eat together — the friend you brought is fed, not just cheered.
 
-And on any given walk there's a **5% chance** of meeting one of three creatures that live in no area
+And on any given walk there's a **10% chance** of meeting one of three creatures that live in no area
 at all — זְהַבְהָב, קַשְׁתּוֹנִי, לַיְלוֹנִי. They drift past glowing, and befriending one takes **two puzzles
 instead of one**, drawn from every type in the game. Their album cards say only that they might turn
 up on a walk. Once all three are found, no more sightings occur.

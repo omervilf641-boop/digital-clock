@@ -1654,9 +1654,9 @@
         say(line.replace(/[֑-ׇ]/g, ''));
     }
 
-    var RARE_CHANCE = 0.05;
+    var RARE_CHANCE = 0.10;
 
-    /* ההגרלה היא פעם אחת לכל טיול, לא לכל הופעה — חמישה אחוזים שהטיול
+    /* ההגרלה היא פעם אחת לכל טיול, לא לכל הופעה — עשרה אחוזים שהטיול
        הזה הוא הטיול שבו פוגשים נדיר. אם כן, מגרילים גם באיזה רגע בדיוק. */
     function rollRare() {
         walk.rareAt = (Math.random() < RARE_CHANCE && rarePool().length) ? rand(2, 6) : -1;
