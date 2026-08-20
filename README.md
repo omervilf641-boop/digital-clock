@@ -138,6 +138,29 @@ zone id the browser knows via `Intl.supportedValuesOf('timeZone')`, on top of th
 - [ ] Sunrise/sunset shading instead of fixed sleep hours
 - [ ] A "who's excluded" list next to each suggested window
 
+## Also in this repo: אי החברזים (a game for ages 5–6)
+
+`game.html` is a separate, self-contained little game in Hebrew — a creature-collecting island for a
+five- or six-year-old. Open it directly:
+
+```bash
+open game.html      # or: python3 -m http.server 8000  →  localhost:8000/game.html
+```
+
+Twelve original creatures live across four areas. Meeting one means solving a single tiny puzzle —
+counting, colours, shapes, same/different, big/small — and then throwing a friendship star. The
+rules that matter are the ones about being five:
+
+- **Nothing can be lost.** A wrong tap is answered with "almost, try again", never with a failure.
+- **No timers**, no score to beat, no game-over screen.
+- **Everything is read aloud** (`speechSynthesis`, `he-IL`), so a child who can't read yet plays alone.
+- Every control is a thumb-sized button; all text is vowelled for a parent reading along.
+
+Areas unlock as friends are collected, and the album keeps its silhouettes until you meet each one.
+Progress is saved in `localStorage`; the 🔊, 🗣️ and ↺ buttons on the title screen toggle sound,
+speech, and start over. No build step, no dependencies here either — `game.html`, `game.css`,
+`game.js`.
+
 ## License
 
 MIT.
