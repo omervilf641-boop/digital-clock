@@ -16,10 +16,13 @@
      * ============================================================== */
 
     var TYPES = {
-        water: { label: 'מים',   emoji: '🌊' },
-        leaf:  { label: 'עלים',  emoji: '🌿' },
-        fire:  { label: 'אש',    emoji: '🔥' },
-        star:  { label: 'כוכב',  emoji: '⭐' }
+        water:   { label: 'מים',   emoji: '🌊', food: '🐟' },
+        leaf:    { label: 'עלים',  emoji: '🌿', food: '🍓' },
+        fire:    { label: 'אש',    emoji: '🔥', food: '🌶️' },
+        star:    { label: 'כוכב',  emoji: '⭐', food: '🍯' },
+        crystal: { label: 'גביש',  emoji: '💎', food: '🧊' },
+        sweet:   { label: 'מתוק',  emoji: '🍬', food: '🍭' },
+        spark:   { label: 'חשמל',  emoji: '⚡', food: '🔋' }
     };
 
     var CREATURES = [
@@ -65,14 +68,59 @@
           fact: 'זיזי מדגדג עננים עד שהם צוחקים גשם.' },
         { id: 'chalomi', nik: 'חֲלוֹמִי', name: 'חלומי', area: 'stars', type: 'star',
           body: '#d59bff', belly: '#f7e9ff', dark: '#a865d6', ears: 'floppy', extra: 'antenna',
-          fact: 'חלומי שומר על החלומות היפים שלכם עד הבוקר.' }
+          fact: 'חלומי שומר על החלומות היפים שלכם עד הבוקר.' },
+
+        /* --- מערת הגבישים --- */
+        { id: 'gavishi', nik: 'גָּבִישִׁי', name: 'גבישי', area: 'cave', type: 'crystal',
+          body: '#7fe4ff', belly: '#e8fbff', dark: '#3aa8c9', ears: 'pointy', extra: 'horn',
+          fact: 'גבישי זוהר בחושך ומראה לכולם את הדרך החוצה.' },
+        { id: 'nitznutzi', nik: 'נִצְנוּצִי', name: 'נצנוצי', area: 'cave', type: 'crystal',
+          body: '#b7c4ff', belly: '#eef1ff', dark: '#7f8fd6', ears: 'round', pattern: 'spots',
+          fact: 'נצנוצי אוסף אבנים מנצנצות ומסדר אותן לפי צבע.' },
+        { id: 'mearoni', nik: 'מְעָרוֹנִי', name: 'מערוני', area: 'cave', type: 'crystal',
+          body: '#a0f0d8', belly: '#eafff8', dark: '#4fbf9e', ears: 'floppy',
+          fact: 'מערוני מכיר כל פינה במערה, גם בעיניים עצומות.' },
+
+        /* --- ענני הסוכר --- */
+        { id: 'sukariti', nik: 'סֻכָּרִיתִי', name: 'סוכריתי', area: 'clouds', type: 'sweet',
+          body: '#ffc2e2', belly: '#fff0f8', dark: '#e884b8', ears: 'leaf',
+          fact: 'סוכריתי מריח כמו תות בבוקר וכמו וניל בערב.' },
+        { id: 'anani', nik: 'עֲנָנִי', name: 'ענני', area: 'clouds', type: 'sweet',
+          body: '#dbe7ff', belly: '#ffffff', dark: '#93a8cc', ears: 'floppy',
+          fact: 'ענני רך כמו כרית, ואוהב שמתכרבלים בו.' },
+        { id: 'marshmelo', nik: 'מַרְשְׁמֶלוֹ', name: 'מרשמלו', area: 'clouds', type: 'sweet',
+          body: '#ffe08a', belly: '#fff8e0', dark: '#d9b04c', ears: 'round', extra: 'antenna',
+          fact: 'מרשמלו מתנפח כשהוא שמח, ואז הוא כמו בלון.' },
+
+        /* --- עיר הרובוטים --- */
+        { id: 'bipi', nik: 'בִּיפִּי', name: 'ביפי', area: 'robots', type: 'spark',
+          body: '#7ad9ff', belly: '#e0f7ff', dark: '#2f9ecf', ears: 'pointy', extra: 'antenna',
+          fact: 'ביפי מדבר בצפצופים, אבל מבין כל מילה שאומרים לו.' },
+        { id: 'borgi', nik: 'בּוֹרְגִּי', name: 'בורגי', area: 'robots', type: 'spark',
+          body: '#ffa8a8', belly: '#ffe8e8', dark: '#d96b6b', ears: 'round', pattern: 'stripes',
+          fact: 'בורגי מסדר את כל הברגים בעיר לפי גודל.' },
+        { id: 'chashmali', nik: 'חַשְׁמַלִּי', name: 'חשמלי', area: 'robots', type: 'spark',
+          body: '#ffe14d', belly: '#fffbd6', dark: '#d9b81c', ears: 'pointy', extra: 'antenna',
+          fact: 'חשמלי מטעין את כל הצעצועים בעיר בלחיצת יד.' }
     ];
 
+    /* לכל אזור רשימת חידות משלו. אזור חדש מציג סוג חידה חדש וקשה יותר,
+       ולוקח איתו אחד או שניים מהאזור הקודם כדי שלא ייפול בבת אחת. */
     var AREAS = [
-        { id: 'beach',   nik: 'חוֹף הַיָּם',      name: 'חוף הים',      emoji: '🏖️' },
-        { id: 'jungle',  nik: 'יַעַר הַגּ׳וּנְגֶּל', name: 'יער הגונגל',   emoji: '🌴' },
-        { id: 'volcano', nik: 'הַר הָאֵשׁ',        name: 'הר האש',       emoji: '🌋' },
-        { id: 'stars',   nik: 'שְׁבִיל הַכּוֹכָבִים', name: 'שביל הכוכבים', emoji: '🌟' }
+        { id: 'beach',   nik: 'חוֹף הַיָּם',        name: 'חוף הים',       emoji: '🏖️',
+          puzzles: ['same', 'count', 'color', 'size'] },
+        { id: 'jungle',  nik: 'יַעַר הַגּ׳וּנְגֶּל',   name: 'יער הגונגל',    emoji: '🌴',
+          puzzles: ['count', 'color', 'size', 'shape'] },
+        { id: 'volcano', nik: 'הַר הָאֵשׁ',          name: 'הר האש',        emoji: '🌋',
+          puzzles: ['shape', 'odd', 'count', 'color'] },
+        { id: 'stars',   nik: 'שְׁבִיל הַכּוֹכָבִים',  name: 'שביל הכוכבים',  emoji: '🌟',
+          puzzles: ['odd', 'shape', 'count', 'size'] },
+        { id: 'cave',    nik: 'מְעָרַת הַגְּבִישִׁים',  name: 'מערת הגבישים',  emoji: '💎',
+          puzzles: ['pattern', 'pattern', 'shape', 'odd'] },
+        { id: 'clouds',  nik: 'עַנְנֵי הַסֻּכָּר',     name: 'ענני הסוכר',    emoji: '☁️',
+          puzzles: ['plus', 'plus', 'count', 'pattern'] },
+        { id: 'robots',  nik: 'עִיר הָרוֹבּוֹטִים',   name: 'עיר הרובוטים',  emoji: '🤖',
+          puzzles: ['memory', 'letter', 'letter', 'plus'] }
     ];
 
     /* ============================================================== *
@@ -81,7 +129,9 @@
 
     var STORE_KEY = 'chavrezim.v1';
 
-    var state = { caught: [], sound: true, voice: true };
+    /* care: לכל חברז שנאסף — כמה הוא שבע, שמח ונח, ומתי נבדק לאחרונה.
+       הערכים 1..5. אף פעם לא 0: חברז לא יכול להיות אומלל, רק "צריך אותך". */
+    var state = { caught: [], care: {}, sound: true, voice: true };
 
     function load() {
         try {
@@ -91,11 +141,16 @@
             if (Array.isArray(saved.caught)) {
                 state.caught = saved.caught.filter(function (id) { return byId(id); });
             }
+            if (saved.care && typeof saved.care === 'object') state.care = saved.care;
             if (typeof saved.sound === 'boolean') state.sound = saved.sound;
             if (typeof saved.voice === 'boolean') state.voice = saved.voice;
         } catch (err) {
             /* אחסון חסום או פגום — משחקים בלי שמירה */
         }
+        /* שמירות ישנות נאספו לפני שהייתה מערכת טיפול — נותנים להן מצב פתיחה טוב */
+        state.caught.forEach(function (id) {
+            if (!state.care[id]) state.care[id] = { full: 4, joy: 4, rest: 4, seen: Date.now() };
+        });
     }
 
     function save() {
@@ -121,6 +176,101 @@
     function areaUnlocked(index) {
         if (index === 0) return true;
         return caughtInArea(AREAS[index - 1].id) >= 2;
+    }
+
+    /* ============================================================== *
+     * מערכת הטיפול
+     *
+     * שלושה צרכים, כל אחד 1..5, שיורדים לאט עם הזמן האמיתי.
+     * שלושה כללים ששומרים על זה ידידותי לגיל חמש:
+     *   1. צורך אף פעם לא יורד מתחת ל-1. אין רעב, אין מחלה, אין מוות.
+     *   2. היעדרות ארוכה לא נצברת — מקסימום שלוש נקודות ירידה, גם אחרי חודש.
+     *   3. אין ניסוח מאשים. הגרוע ביותר הוא "קצת רעב", לא "הזנחת אותי".
+     * ============================================================== */
+
+    var NEEDS = [
+        { key: 'full', nik: 'שָׂבֵעַ',  emoji: '🍎' },
+        { key: 'joy',  nik: 'שָׂמֵחַ',  emoji: '🎈' },
+        { key: 'rest', nik: 'נָח',      emoji: '😴' }
+    ];
+
+    var HOURS_PER_POINT = 2;         /* כל שעתיים יורדת נקודה אחת */
+    var MAX_DECAY = 3;               /* לא משנה כמה זמן עבר */
+
+    function careOf(id) {
+        if (!state.care[id]) {
+            /* חברז טרי מגיע קצת רעב — יש מה לעשות בשבילו, בלי שהוא נחשב נזקק */
+            state.care[id] = { full: 3, joy: 4, rest: 4, seen: Date.now() };
+        }
+        return state.care[id];
+    }
+
+    /* מיישם את הזמן שעבר מאז הביקור האחרון, ומקדם את השעון */
+    function settle(id) {
+        var care = careOf(id);
+        var hours = (Date.now() - (care.seen || Date.now())) / 3600000;
+        var drop = Math.min(MAX_DECAY, Math.floor(hours / HOURS_PER_POINT));
+        if (drop > 0) {
+            NEEDS.forEach(function (need) {
+                care[need.key] = Math.max(1, (care[need.key] || 3) - drop);
+            });
+            care.seen = Date.now();
+            save();
+        }
+        return care;
+    }
+
+    function settleAll() { state.caught.forEach(settle); }
+
+    function feed(id, amount) {
+        var care = settle(id);
+        care.full = Math.min(5, care.full + amount);
+        care.joy = Math.min(5, care.joy + 1);
+        save();
+    }
+
+    function cheer(id) {
+        var care = settle(id);
+        care.joy = Math.min(5, care.joy + 1);
+        save();
+    }
+
+    function rest(id) {
+        var care = settle(id);
+        care.rest = 5;
+        care.joy = Math.min(5, care.joy + 1);
+        save();
+    }
+
+    /* ממוצע הצרכים -> פרצוף. אין פרצוף עצוב, רק "צריך אותך". */
+    function mood(id) {
+        var care = settle(id);
+        var avg = (care.full + care.joy + care.rest) / 3;
+        if (avg >= 4.5) return { emoji: '😄', nik: 'מְאֻשָּׁר', say: 'מאושר' };
+        if (avg >= 3.5) return { emoji: '🙂', nik: 'שָׂמֵחַ',  say: 'שמח' };
+        if (avg >= 2.5) return { emoji: '😌', nik: 'בְּסֵדֶר',  say: 'בסדר' };
+        return { emoji: '🥺', nik: 'צָרִיךְ אֶתְכֶם', say: 'צריך אתכם' };
+    }
+
+    /* מה הכי כדאי לעשות בשבילו עכשיו — הזמנה, לא אזהרה */
+    function topNeed(id) {
+        var care = settle(id);
+        var worst = null;
+        NEEDS.forEach(function (need) {
+            if (care[need.key] > 3) return;
+            if (!worst || care[need.key] < care[worst.key]) worst = need;
+        });
+        return worst;
+    }
+
+    /* מי באמת מבקש תשומת לב. סף נמוך יותר, כדי שהאלבום לא ינדנד על כולם בבת אחת */
+    function isAsking(id) {
+        var care = settle(id);
+        return NEEDS.some(function (need) { return care[need.key] <= 2; });
+    }
+
+    function needsCare() {
+        return state.caught.filter(isAsking).length;
     }
 
     /* רמת קושי עולה לאט לפי מספר החברים שנאספו */
@@ -211,7 +361,28 @@
         return '';
     }
 
-    function creatureSVG(c, cls) {
+    /* עיניים עצומות + Zzz, לשעת השינה */
+    function sleepingFace(c) {
+        return '<path d="M38 58 q8 8 16 0" stroke="#1f2a52" stroke-width="3.4" fill="none" stroke-linecap="round"/>' +
+               '<path d="M66 58 q8 8 16 0" stroke="#1f2a52" stroke-width="3.4" fill="none" stroke-linecap="round"/>' +
+               '<ellipse cx="60" cy="68" rx="4" ry="3" fill="' + c.dark + '"/>' +
+               '<ellipse cx="60" cy="76" rx="5" ry="4" fill="' + c.dark + '" opacity=".35"/>' +
+               '<text x="98" y="34" font-size="16" fill="#4a5885" font-family="sans-serif">z</text>' +
+               '<text x="106" y="20" font-size="11" fill="#4a5885" font-family="sans-serif">z</text>';
+    }
+
+    function awakeFace(c) {
+        return '<ellipse cx="46" cy="58" rx="11" ry="12.5" fill="#fff"/>' +
+               '<ellipse cx="74" cy="58" rx="11" ry="12.5" fill="#fff"/>' +
+               '<circle cx="47" cy="60" r="6" fill="#1f2a52"/>' +
+               '<circle cx="75" cy="60" r="6" fill="#1f2a52"/>' +
+               '<circle cx="45" cy="57" r="2.3" fill="#fff"/>' +
+               '<circle cx="73" cy="57" r="2.3" fill="#fff"/>' +
+               '<ellipse cx="60" cy="68" rx="4" ry="3" fill="' + c.dark + '"/>' +
+               '<path d="M50 72 q10 10 20 0" stroke="' + c.dark + '" stroke-width="3.4" fill="none" stroke-linecap="round"/>';
+    }
+
+    function creatureSVG(c, cls, asleep) {
         return '' +
         '<svg viewBox="0 0 120 120" class="' + (cls || '') + '" role="img" aria-label="' + c.name + '">' +
             ears(c) +
@@ -228,16 +399,8 @@
             /* לחיים */
             '<circle cx="32" cy="74" r="7" fill="#ff8fc4" opacity=".55"/>' +
             '<circle cx="88" cy="74" r="7" fill="#ff8fc4" opacity=".55"/>' +
-            /* עיניים */
-            '<ellipse cx="46" cy="58" rx="11" ry="12.5" fill="#fff"/>' +
-            '<ellipse cx="74" cy="58" rx="11" ry="12.5" fill="#fff"/>' +
-            '<circle cx="47" cy="60" r="6" fill="#1f2a52"/>' +
-            '<circle cx="75" cy="60" r="6" fill="#1f2a52"/>' +
-            '<circle cx="45" cy="57" r="2.3" fill="#fff"/>' +
-            '<circle cx="73" cy="57" r="2.3" fill="#fff"/>' +
-            /* אף וחיוך */
-            '<ellipse cx="60" cy="68" rx="4" ry="3" fill="' + c.dark + '"/>' +
-            '<path d="M50 72 q10 10 20 0" stroke="' + c.dark + '" stroke-width="3.4" fill="none" stroke-linecap="round"/>' +
+            /* פנים */
+            (asleep ? sleepingFace(c) : awakeFace(c)) +
         '</svg>';
     }
 
@@ -328,6 +491,7 @@
         title: 'screenTitle',
         map:   'screenMap',
         play:  'screenPlay',
+        pet:   'screenPet',
         album: 'screenAlbum'
     };
 
@@ -395,9 +559,13 @@
         });
 
         var total = CREATURES.length;
+        var asking = needsCare();
         $('scoreLine').textContent = state.caught.length === total
             ? '🎉 אָסַפְתֶּם אֶת כָּל ' + total + ' הַחַבְרֵזִים! אַלּוּפִים!'
             : 'אָסַפְתֶּם ' + state.caught.length + ' מִתּוֹךְ ' + total + ' חַבְרֵזִים ⭐';
+        $('careLine').textContent = asking
+            ? (asking === 1 ? '💛 חָבֵר אֶחָד מְחַכֶּה לְטִפּוּל' : '💛 ' + asking + ' חֲבֵרִים מְחַכִּים לְטִפּוּל')
+            : '';
     }
 
     /* ============================================================== *
@@ -539,11 +707,140 @@
         };
     }
 
-    function makePuzzle() {
-        var easy = [puzzleSame, puzzleCount, puzzleColor, puzzleSize];
-        var all = easy.concat([puzzleShape, puzzleOdd]);
-        var maker = pick(level() === 0 ? easy : all);
-        return maker(level());
+    /* ---------------- החידות של האזורים החדשים ---------------- */
+
+    var DOTS = ['🔴', '🔵', '🟡', '🟢', '🟣', '🟠'];
+
+    /* מה בא אחר כך? — זיהוי חוקיות */
+    function puzzlePattern(lv) {
+        var colors = sample(DOTS, 3);
+        var a = colors[0], b = colors[1], c = colors[2];
+
+        /* חוקיות פשוטה בהתחלה, משולשת רק כשכבר יש ניסיון */
+        var seq, answer;
+        if (lv < 2) {
+            seq = [a, b, a, b, a];
+            answer = b;
+        } else if (Math.random() < 0.5) {
+            seq = [a, a, b, a, a];
+            answer = b;
+        } else {
+            seq = [a, b, c, a, b];
+            answer = c;
+        }
+
+        return {
+            question: 'מָה בָּא אַחַר כָּךְ?',
+            speak: 'תסתכלו על השורה. מה בא אחר כך?',
+            layout: 'row',
+            items: seq.concat(['<span class="blank">?</span>']),
+            choices: shuffle([a, b, c]).map(function (dot) {
+                return { html: dot, correct: dot === answer, label: dot };
+            })
+        };
+    }
+
+    /* כמה יש ביחד? — חיבור */
+    function puzzlePlus(lv) {
+        var top = lv === 0 ? 3 : (lv === 1 ? 4 : 5);
+        var a = rand(1, top);
+        var b = rand(1, top);
+        var sum = a + b;
+        var emoji = pick(['🍬', '🍭', '🧁', '🍩', '🍒']);
+
+        var options = [sum];
+        while (options.length < 3) {
+            var guess = rand(2, top * 2);
+            if (options.indexOf(guess) === -1) options.push(guess);
+        }
+
+        /* שתי קבוצות נפרדות, לא שורה אחת ארוכה: אחרת לא רואים מה ועוד מה */
+        var group = function (n) {
+            var html = '';
+            for (var i = 0; i < n; i++) html += emoji;
+            return '<span class="group">' + html + '</span>';
+        };
+
+        return {
+            question: 'כַּמָּה יֵשׁ בְּיַחַד?',
+            speak: 'כמה יש ביחד? ' + a + ' ועוד ' + b,
+            layout: 'sum',
+            items: [group(a), '<span class="op">➕</span>', group(b)],
+            choices: shuffle(options).map(function (val) {
+                return { html: String(val), correct: val === sum, label: String(val) };
+            })
+        };
+    }
+
+    /* מה נעלם? — זיכרון. הפריטים נראים, ואז אחד מהם נעלם. */
+    function puzzleMemory(lv) {
+        var count = lv < 2 ? 3 : 4;
+        var chosen = sample(FOOD, count);
+        var gone = pick(chosen);
+        var stayed = chosen.filter(function (e) { return e !== gone; });
+
+        return {
+            question: 'מִי נֶעֱלַם?',
+            speak: 'תסתכלו טוב על החברים. מי מהם נעלם?',
+            revealItems: chosen,
+            items: stayed,
+            choices: shuffle([gone].concat(sample(stayed, 2))).map(function (e) {
+                return { html: e, correct: e === gone, label: e };
+            })
+        };
+    }
+
+    /* באיזו אות מתחיל? — זיהוי אות ראשונה */
+    var WORDS = [
+        { emoji: '🍎', word: 'תפוח',   letter: 'ת' },
+        { emoji: '🍌', word: 'בננה',   letter: 'ב' },
+        { emoji: '🐟', word: 'דג',     letter: 'ד' },
+        { emoji: '⭐', word: 'כוכב',   letter: 'כ' },
+        { emoji: '🌸', word: 'פרח',    letter: 'פ' },
+        { emoji: '🐰', word: 'ארנב',   letter: 'א' },
+        { emoji: '🥕', word: 'גזר',    letter: 'ג' },
+        { emoji: '🌳', word: 'עץ',     letter: 'ע' },
+        { emoji: '🎈', word: 'בלון',   letter: 'ב' },
+        { emoji: '🌙', word: 'ירח',    letter: 'י' },
+        { emoji: '🍄', word: 'פטריה',  letter: 'פ' },
+        { emoji: '🦋', word: 'פרפר',   letter: 'פ' },
+        { emoji: '🐝', word: 'דבורה',  letter: 'ד' },
+        { emoji: '🍇', word: 'ענבים',  letter: 'ע' }
+    ];
+
+    function puzzleLetter() {
+        var target = pick(WORDS);
+        var others = shuffle('אבגדהוזחטיכלמנספצקרשת'.split(''))
+            .filter(function (ch) { return ch !== target.letter; })
+            .slice(0, 2);
+
+        return {
+            question: 'בְּאֵיזוֹ אוֹת מַתְחִיל?',
+            speak: 'באיזו אות מתחילה המילה ' + target.word + '?',
+            items: [target.emoji],
+            choices: shuffle([target.letter].concat(others)).map(function (ch) {
+                return { html: ch, correct: ch === target.letter, label: 'האות ' + ch };
+            })
+        };
+    }
+
+    var MAKERS = {
+        same:    puzzleSame,
+        count:   puzzleCount,
+        color:   puzzleColor,
+        size:    puzzleSize,
+        shape:   puzzleShape,
+        odd:     puzzleOdd,
+        pattern: puzzlePattern,
+        plus:    puzzlePlus,
+        memory:  puzzleMemory,
+        letter:  puzzleLetter
+    };
+
+    /* כל אזור מגריל מתוך החידות שלו בלבד */
+    function makePuzzle(area) {
+        var names = (area && area.puzzles) || ['same', 'count', 'color', 'size'];
+        return MAKERS[pick(names)](level());
     }
 
     /* ============================================================== *
@@ -557,7 +854,7 @@
         var replay = pool.length === 0;
         var creature = replay ? pick(inArea(area.id)) : pick(pool);
 
-        current = { area: area, creature: creature, puzzle: makePuzzle(), solved: false, replay: replay };
+        current = { area: area, creature: creature, puzzle: makePuzzle(area), solved: false, replay: replay };
 
         $('areaName').textContent = area.nik;
         $('catchZone').hidden = true;
@@ -578,6 +875,17 @@
         say(line);
     }
 
+    function drawItems(box, list) {
+        box.innerHTML = '';
+        list.forEach(function (html, i) {
+            var el = document.createElement('span');
+            el.className = 'item';
+            el.style.animationDelay = (i * 0.08) + 's';
+            el.innerHTML = html;
+            box.appendChild(el);
+        });
+    }
+
     function renderPuzzle() {
         var p = current.puzzle;
         var box = $('puzzle');
@@ -588,16 +896,11 @@
         q.textContent = p.question;
         box.appendChild(q);
 
-        if (p.items.length) {
-            var items = document.createElement('div');
-            items.className = 'items';
-            p.items.forEach(function (html, i) {
-                var el = document.createElement('span');
-                el.className = 'item';
-                el.style.animationDelay = (i * 0.08) + 's';
-                el.innerHTML = html;
-                items.appendChild(el);
-            });
+        var items = null;
+        if (p.items.length || p.revealItems) {
+            items = document.createElement('div');
+            items.className = 'items' + (p.layout ? ' is-' + p.layout : '');
+            drawItems(items, p.revealItems || p.items);
             box.appendChild(items);
         }
 
@@ -612,6 +915,40 @@
             btn.addEventListener('click', function () { answer(choice, btn, choices); });
             choices.appendChild(btn);
         });
+
+        /* חידת זיכרון: קודם מסתכלים, ואז אחד נעלם.
+           זה השהיה של ההצגה, לא שעון על התשובה — לענות אפשר בלי הגבלה,
+           ואפשר לבקש להסתכל שוב כמה פעמים שרוצים. */
+        if (p.revealItems) {
+            choices.classList.add('is-waiting');
+            q.textContent = 'תִּסְתַּכְּלוּ טוֹב...';
+
+            var peek = document.createElement('button');
+            peek.type = 'button';
+            peek.className = 'peek-btn';
+            peek.textContent = '👀 לְהִסְתַּכֵּל שׁוּב';
+
+            var hide = function () {
+                drawItems(items, p.items);
+                q.textContent = p.question;
+                choices.classList.remove('is-waiting');
+                peek.disabled = false;
+                sfx.tap();
+            };
+
+            var look = function () {
+                peek.disabled = true;
+                choices.classList.add('is-waiting');
+                q.textContent = 'תִּסְתַּכְּלוּ טוֹב...';
+                drawItems(items, p.revealItems);
+                setTimeout(hide, 3500);
+            };
+
+            peek.addEventListener('click', look);
+            box.appendChild(peek);
+            setTimeout(hide, 3500);
+        }
+
         box.appendChild(choices);
     }
 
@@ -662,6 +999,7 @@
             var fresh = !isCaught(c.id);
             if (fresh) {
                 state.caught.push(c.id);
+                careOf(c.id);
                 save();
             }
 
@@ -697,12 +1035,194 @@
         var toAlbum = document.createElement('button');
         toAlbum.type = 'button';
         toAlbum.className = 'big-btn ghost-btn';
-        toAlbum.innerHTML = '<span class="btn-emoji">📔</span> לָאַלְבּוֹם';
-        toAlbum.addEventListener('click', function () { sfx.page(); show('album'); });
+        toAlbum.innerHTML = '<span class="btn-emoji">🍎</span> לְטַפֵּל בּוֹ';
+        toAlbum.addEventListener('click', function () { sfx.page(); openPet(current.creature.id); });
 
         box.appendChild(again);
         box.appendChild(toMap);
         box.appendChild(toAlbum);
+    }
+
+    /* ============================================================== *
+     * מסך הטיפול — האכלה, משחק ושינה
+     * ============================================================== */
+
+    var petId = null;
+    var sleeping = false;
+
+    function openPet(id) {
+        petId = id;
+        sleeping = false;
+        var c = byId(id);
+        $('petName').textContent = c.nik;
+        $('carePanel').innerHTML = '';
+        show('pet');
+
+        var m = mood(id);
+        var need = topNeed(id);
+        var hello = need
+            ? { full: 'אֲנִי קְצָת רָעֵב...', joy: 'בָּא לִי לְשַׂחֵק!', rest: 'אֲנִי קְצָת עָיֵף...' }[need.key]
+            : 'אֲנִי מַרְגִּישׁ נֶהְדָּר! תּוֹדָה שֶׁאַתֶּם דּוֹאֲגִים לִי.';
+        $('petSpeech').textContent = hello;
+        say(c.name + '. ' + hello.replace(/[֑-ׇ]/g, ''));
+        void m;
+        renderPet();
+    }
+
+    function renderPet() {
+        var c = byId(petId);
+        var care = settle(petId);
+
+        var slot = $('petSlot');
+        slot.className = 'creature-slot' + (sleeping ? ' is-sleeping' : '');
+        slot.innerHTML = creatureSVG(c, '', sleeping);
+
+        var meters = $('petMeters');
+        meters.innerHTML = '';
+        NEEDS.forEach(function (need) {
+            var row = document.createElement('div');
+            row.className = 'meter';
+
+            var pips = '';
+            for (var i = 1; i <= 5; i++) {
+                pips += '<span class="pip' + (i <= care[need.key] ? ' is-on' : '') + '"></span>';
+            }
+
+            row.innerHTML =
+                '<span class="meter-emoji" aria-hidden="true">' + need.emoji + '</span>' +
+                '<span class="meter-label">' + need.nik + '</span>' +
+                '<span class="pips" role="img" aria-label="' + need.nik + ' ' + care[need.key] + ' מתוך 5">' +
+                pips + '</span>';
+            meters.appendChild(row);
+        });
+
+        var actions = $('careActions');
+        actions.innerHTML = '';
+        [
+            { key: 'feed',  emoji: '🍎', nik: 'לְהַאֲכִיל', run: panelFeed },
+            { key: 'play',  emoji: '🎈', nik: 'לְשַׂחֵק',   run: panelPlay },
+            { key: 'sleep', emoji: '😴', nik: 'לִישֹׁן',    run: panelSleep }
+        ].forEach(function (action) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'care-btn';
+            btn.disabled = sleeping;
+            btn.innerHTML = '<span class="care-emoji" aria-hidden="true">' + action.emoji + '</span>' +
+                            '<span class="care-label">' + action.nik + '</span>';
+            btn.addEventListener('click', function () { sfx.tap(); action.run(); });
+            actions.appendChild(btn);
+        });
+    }
+
+    /* --- האכלה: שלושה מאכלים, אחד מהם האהוב עליו.
+           כל בחירה מאכילה — האהוב פשוט משמח יותר. אין בחירה שגויה. --- */
+    function panelFeed() {
+        var c = byId(petId);
+        var favourite = TYPES[c.type].food;
+        var others = shuffle(Object.keys(TYPES)
+            .map(function (t) { return TYPES[t].food; })
+            .filter(function (f) { return f !== favourite; })).slice(0, 2);
+
+        var panel = $('carePanel');
+        panel.innerHTML = '<p class="panel-q">מָה נוֹתְנִים לוֹ לֶאֱכֹל?</p>';
+        say('מה נותנים ל' + c.name + ' לאכול?');
+
+        var row = document.createElement('div');
+        row.className = 'choices';
+        shuffle([favourite].concat(others)).forEach(function (food) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'choice';
+            btn.textContent = food;
+            btn.addEventListener('click', function () {
+                var loved = food === favourite;
+                feed(petId, loved ? 2 : 1);
+                sfx.good();
+                if (loved) confetti(14);
+                $('petSlot').className = 'creature-slot is-eating';
+                var line = loved
+                    ? 'מַמְמְ! זֶה הָאֹכֶל הָאָהוּב עָלַי!'
+                    : 'תּוֹדָה! הָיָה טָעִים.';
+                $('petSpeech').textContent = line;
+                say(line.replace(/[֑-ׇ]/g, ''));
+                panel.innerHTML = '';
+                setTimeout(renderPet, 700);
+            });
+            row.appendChild(btn);
+        });
+        panel.appendChild(row);
+    }
+
+    /* --- משחק: שלוש דגדוגים על החברז --- */
+    function panelPlay() {
+        var c = byId(petId);
+        var left = 3;
+        var panel = $('carePanel');
+        panel.innerHTML = '<p class="panel-q">לְדַגְדֵּג אוֹתוֹ שָׁלוֹשׁ פְּעָמִים!</p>' +
+                          '<p class="panel-hint" id="tickleLeft"></p>';
+        say('לדגדג את ' + c.name + ' שלוש פעמים! תלחצו עליו');
+
+        var slot = $('petSlot');
+        slot.classList.add('is-tickly');
+
+        var count = function () {
+            $('tickleLeft').textContent = left > 0 ? '⭐'.repeat(left) : '';
+        };
+        count();
+
+        var tickle = function () {
+            if (left <= 0) return;
+            left--;
+            count();
+            sfx.tap();
+            slot.className = 'creature-slot is-tickly is-happy';
+            setTimeout(function () { slot.className = 'creature-slot is-tickly'; }, 400);
+
+            if (left === 0) {
+                slot.removeEventListener('click', tickle);
+                slot.classList.remove('is-tickly');
+                cheer(petId);
+                sfx.good();
+                confetti(16);
+                var line = 'חִיחִי! זֶה מְדַגְדֵּג!';
+                $('petSpeech').textContent = line;
+                say(line.replace(/[֑-ׇ]/g, ''));
+                panel.innerHTML = '';
+                setTimeout(renderPet, 700);
+            }
+        };
+
+        slot.addEventListener('click', tickle);
+    }
+
+    /* --- שינה: מחשיכים, שיר ערש קצר, והוא מתעורר רענן --- */
+    function panelSleep() {
+        var c = byId(petId);
+        sleeping = true;
+        renderPet();
+
+        $('petStage').classList.add('is-night');
+        $('petSpeech').textContent = 'לַיְלָה טוֹב... 💤';
+        say('לילה טוב, ' + c.name);
+
+        /* שיר ערש קצר ורך */
+        [523, 440, 392, 349, 392, 440].forEach(function (f, i) {
+            tone(f, 0.5 + i * 0.55, 0.7, 'sine', 0.09);
+        });
+
+        $('carePanel').innerHTML = '<p class="panel-hint">שְׁ... הוּא יָשֵׁן 💤</p>';
+
+        setTimeout(function () {
+            sleeping = false;
+            rest(petId);
+            $('petStage').classList.remove('is-night');
+            var line = 'בֹּקֶר טוֹב! יָשַׁנְתִּי נֶהְדָּר.';
+            $('petSpeech').textContent = line;
+            say(line.replace(/[֑-ׇ]/g, ''));
+            sfx.star();
+            $('carePanel').innerHTML = '';
+            renderPet();
+        }, 4200);
     }
 
     /* ============================================================== *
@@ -712,13 +1232,23 @@
     function renderAlbum() {
         var grid = $('albumGrid');
         grid.innerHTML = '';
+        settleAll();
 
         CREATURES.forEach(function (c) {
             var have = isCaught(c.id);
             var card = document.createElement('button');
             card.type = 'button';
             card.className = 'album-card' + (have ? '' : ' is-locked');
-            card.innerHTML = creatureSVG(c) +
+
+            var badge = '';
+            if (have) {
+                var m = mood(c.id);
+                var asking = isAsking(c.id) && topNeed(c.id);
+                badge = '<span class="mood' + (asking ? ' is-asking' : '') + '" aria-label="' + m.say + '">' +
+                        (asking ? asking.emoji : m.emoji) + '</span>';
+            }
+
+            card.innerHTML = badge + creatureSVG(c) +
                 '<span class="name">' + (have ? c.nik : '???') + '</span>' +
                 '<span class="type">' + (have ? TYPES[c.type].emoji + ' ' + TYPES[c.type].label : '❔') + '</span>';
 
@@ -731,16 +1261,18 @@
                     return;
                 }
                 sfx.tap();
-                $('albumNote').textContent = c.nik + ': ' + c.fact;
-                say(c.name + '. ' + c.fact);
+                openPet(c.id);
             });
 
             grid.appendChild(card);
         });
 
-        $('albumNote').textContent = state.caught.length
-            ? 'לַחֲצוּ עַל חָבֵר כְּדֵי לִשְׁמֹעַ עָלָיו סוֹד קָטָן.'
-            : 'הָאַלְבּוֹם עוֹד רֵיק — צְאוּ לְטַיֵּל וְתִמְצְאוּ חֲבֵרִים!';
+        var asking = needsCare();
+        $('albumNote').textContent = !state.caught.length
+            ? 'עוֹד אֵין לָכֶם חֲבֵרִים — צְאוּ לְטַיֵּל וְתִמְצְאוּ אוֹתָם!'
+            : asking
+                ? (asking === 1 ? 'חָבֵר אֶחָד צָרִיךְ אֶתְכֶם 💛' : asking + ' חֲבֵרִים צְרִיכִים אֶתְכֶם 💛')
+                : 'כֻּלָּם מְטֻפָּלִים וּמְאֻשָּׁרִים! 💛';
     }
 
     /* ============================================================== *
@@ -809,6 +1341,9 @@
     }
 
     /* נחשף לבדיקות ידניות מהקונסולה */
-    window.Chavrezim = { CREATURES: CREATURES, AREAS: AREAS, state: state, makePuzzle: makePuzzle };
+    window.Chavrezim = {
+        CREATURES: CREATURES, AREAS: AREAS, state: state,
+        makePuzzle: makePuzzle, settle: settle, mood: mood, isAsking: isAsking, needsCare: needsCare
+    };
 
 })();
