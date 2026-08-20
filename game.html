@@ -32,6 +32,9 @@
         <button class="big-btn ghost-btn" id="albumBtnTitle" type="button">
             <span class="btn-emoji" aria-hidden="true">📔</span> הַחֲבֵרִים שֶׁלִּי
         </button>
+        <button class="big-btn ghost-btn" id="heroBtn" type="button">
+            <span class="btn-emoji" aria-hidden="true">🧒</span> <span id="heroBtnLabel">הַדְּמוּת שֶׁלִּי</span>
+        </button>
         <div class="title-tools">
             <button class="tool" id="soundBtn" type="button" aria-pressed="true" title="צלילים">🔊</button>
             <button class="tool" id="voiceBtn" type="button" aria-pressed="true" title="הקראה">🗣️</button>
@@ -46,9 +49,13 @@
             <p class="bar-title">לְאָן נֵלֵךְ?</p>
             <button class="tool" data-goto="album" type="button" title="האלבום שלי">📔</button>
         </header>
+        <button class="big-btn walk-btn" id="walkBtn" type="button">
+            <span class="btn-emoji" aria-hidden="true">🚶</span> לָצֵאת לְטִיּוּל
+        </button>
         <div class="map-grid" id="mapGrid"></div>
         <p class="score-line" id="scoreLine"></p>
         <p class="care-line" id="careLine"></p>
+        <p class="bag-line" id="bagLine"></p>
     </section>
 
     <!-- ------------------------------------------------ מפגש עם חברז -->
@@ -70,6 +77,47 @@
             <p class="catch-text">כָּל הַכָּבוֹד! זִרְקוּ אֶת כּוֹכַב הַחֲבֵרוּת</p>
             <button class="star-btn" id="starBtn" type="button" aria-label="לזרוק את הכוכב">⭐</button>
         </div>
+    </section>
+
+    <!-- ------------------------------------------------ יצירת הדמות -->
+    <section class="screen screen-hero" id="screenHero">
+        <header class="bar">
+            <button class="tool" data-goto="title" type="button" title="חזרה">🏠</button>
+            <p class="bar-title">מִי אַתֶּם?</p>
+            <span class="tool tool-ghost" aria-hidden="true"></span>
+        </header>
+
+        <div class="hero-preview" id="heroPreview"></div>
+
+        <label class="hero-name">
+            <span>הַשֵּׁם שֶׁלִּי</span>
+            <input type="text" id="heroName" maxlength="12" autocomplete="off" spellcheck="false">
+        </label>
+
+        <div class="hero-pickers" id="heroPickers"></div>
+
+        <button class="big-btn" id="heroDone" type="button">
+            <span class="btn-emoji" aria-hidden="true">✔</span> זֶה אֲנִי!
+        </button>
+    </section>
+
+    <!-- ------------------------------------------------ טיול -->
+    <section class="screen screen-walk" id="screenWalk">
+        <header class="bar">
+            <button class="tool" id="walkHome" type="button" title="הביתה">🏠</button>
+            <p class="bar-title" id="walkTitle"></p>
+            <span class="tool tool-ghost" id="walkCount"></span>
+        </header>
+
+        <div class="walk-scene" id="walkScene">
+            <div class="walk-hills" aria-hidden="true"></div>
+            <div class="walk-items" id="walkItems"></div>
+            <div class="walkers" id="walkers"></div>
+            <div class="walk-ground" aria-hidden="true"></div>
+        </div>
+
+        <p class="speech walk-speech" id="walkSpeech"></p>
+        <div class="walk-end" id="walkEnd"></div>
     </section>
 
     <!-- ------------------------------------------------ טיפול בחברז -->

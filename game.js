@@ -131,7 +131,7 @@
 
     /* care: לכל חברז שנאסף — כמה הוא שבע, שמח ונח, ומתי נבדק לאחרונה.
        הערכים 1..5. אף פעם לא 0: חברז לא יכול להיות אומלל, רק "צריך אותך". */
-    var state = { caught: [], care: {}, sound: true, voice: true };
+    var state = { caught: [], care: {}, hero: null, treasures: {}, sound: true, voice: true };
 
     function load() {
         try {
@@ -142,6 +142,8 @@
                 state.caught = saved.caught.filter(function (id) { return byId(id); });
             }
             if (saved.care && typeof saved.care === 'object') state.care = saved.care;
+            if (saved.hero && typeof saved.hero === 'object') state.hero = saved.hero;
+            if (saved.treasures && typeof saved.treasures === 'object') state.treasures = saved.treasures;
             if (typeof saved.sound === 'boolean') state.sound = saved.sound;
             if (typeof saved.voice === 'boolean') state.voice = saved.voice;
         } catch (err) {
@@ -405,6 +407,85 @@
     }
 
     /* ============================================================== *
+     * הדמות שלכם
+     * ============================================================== */
+
+    var LOOKS = {
+        skin:  ['#f7d7c4', '#eab68f', '#c78a5e', '#8d5a3b'],
+        hair:  ['short', 'long', 'curly', 'ponytail', 'bun'],
+        color: ['#3b2a20', '#7a4a24', '#d9a441', '#e86a4a', '#5b4a8f', '#3f9ad9'],
+        shirt: ['#ff8fc4', '#4ea9ff', '#4fd6b0', '#ffd93d', '#a97bff', '#ff7a59']
+    };
+
+    function defaultHero() {
+        return { name: 'חָבֵר', skin: 0, hair: 0, color: 0, shirt: 0 };
+    }
+
+    function hairSVG(style, color) {
+        var cap = '<path d="M50 18 C 26 18, 20 36, 22 52 C 25 38, 33 32, 50 32 ' +
+                  'C 67 32, 75 38, 78 52 C 80 36, 74 18, 50 18 Z" fill="' + color + '"/>';
+        switch (style) {
+            case 'long':
+                return '<path d="M20 44 q-2 30 4 44 h12 q-6 -22 -4 -44 z" fill="' + color + '"/>' +
+                       '<path d="M80 44 q2 30 -4 44 h-12 q6 -22 4 -44 z" fill="' + color + '"/>' + cap;
+            case 'curly':
+                return cap +
+                       '<g fill="' + color + '">' +
+                       '<circle cx="28" cy="30" r="9"/><circle cx="42" cy="22" r="10"/>' +
+                       '<circle cx="58" cy="22" r="10"/><circle cx="72" cy="30" r="9"/>' +
+                       '</g>';
+            case 'ponytail':
+                return '<ellipse cx="84" cy="56" rx="9" ry="18" fill="' + color + '"/>' +
+                       '<circle cx="80" cy="40" r="7" fill="' + color + '"/>' + cap;
+            case 'bun':
+                return '<circle cx="50" cy="14" r="11" fill="' + color + '"/>' + cap;
+            default:
+                return cap;
+        }
+    }
+
+    function heroSVG(hero, cls) {
+        var h = hero || defaultHero();
+        var skin = LOOKS.skin[h.skin % LOOKS.skin.length];
+        var shirt = LOOKS.shirt[h.shirt % LOOKS.shirt.length];
+        var hairColor = LOOKS.color[h.color % LOOKS.color.length];
+        var hairStyle = LOOKS.hair[h.hair % LOOKS.hair.length];
+
+        return '' +
+        '<svg viewBox="0 0 100 148" class="' + (cls || '') + '" role="img" aria-label="' + h.name + '">' +
+            /* נעליים ורגליים */
+            '<ellipse cx="38" cy="138" rx="11" ry="7" fill="#3b4675"/>' +
+            '<ellipse cx="62" cy="138" rx="11" ry="7" fill="#3b4675"/>' +
+            '<rect x="33" y="106" width="12" height="28" rx="6" fill="#5a6796"/>' +
+            '<rect x="55" y="106" width="12" height="28" rx="6" fill="#5a6796"/>' +
+            /* גוף */
+            '<rect x="27" y="74" width="46" height="40" rx="17" fill="' + shirt + '"/>' +
+            /* ידיים */
+            '<rect x="16" y="78" width="13" height="30" rx="6.5" fill="' + shirt + '"/>' +
+            '<rect x="71" y="78" width="13" height="30" rx="6.5" fill="' + shirt + '"/>' +
+            '<circle cx="22" cy="110" r="7" fill="' + skin + '"/>' +
+            '<circle cx="78" cy="110" r="7" fill="' + skin + '"/>' +
+            /* ראש */
+            '<circle cx="26" cy="52" r="6" fill="' + skin + '"/>' +
+            '<circle cx="74" cy="52" r="6" fill="' + skin + '"/>' +
+            '<circle cx="50" cy="50" r="26" fill="' + skin + '"/>' +
+            hairSVG(hairStyle, hairColor) +
+            /* פנים */
+            '<circle cx="41" cy="52" r="4" fill="#1f2a52"/>' +
+            '<circle cx="59" cy="52" r="4" fill="#1f2a52"/>' +
+            '<circle cx="39.6" cy="50.6" r="1.5" fill="#fff"/>' +
+            '<circle cx="57.6" cy="50.6" r="1.5" fill="#fff"/>' +
+            '<circle cx="34" cy="60" r="5" fill="#ff8fc4" opacity=".45"/>' +
+            '<circle cx="66" cy="60" r="5" fill="#ff8fc4" opacity=".45"/>' +
+            '<path d="M43 62 q7 7 14 0" stroke="#1f2a52" stroke-width="2.6" fill="none" stroke-linecap="round"/>' +
+        '</svg>';
+    }
+
+    function heroName() {
+        return (state.hero && state.hero.name) || 'חָבֵר';
+    }
+
+    /* ============================================================== *
      * צליל ודיבור
      * ============================================================== */
 
@@ -489,8 +570,10 @@
 
     var SCREENS = {
         title: 'screenTitle',
+        hero:  'screenHero',
         map:   'screenMap',
         play:  'screenPlay',
+        walk:  'screenWalk',
         pet:   'screenPet',
         album: 'screenAlbum'
     };
@@ -503,6 +586,8 @@
         if (name === 'map') renderMap();
         if (name === 'album') renderAlbum();
         if (name === 'title') renderTitle();
+        if (name === 'hero') renderHero();
+        if (name !== 'walk') stopWalk();
     }
 
     /* ============================================================== *
@@ -510,10 +595,71 @@
      * ============================================================== */
 
     function renderTitle() {
-        var stars = sample(CREATURES, 3);
-        $('titleArt').innerHTML = stars.map(function (c) { return creatureSVG(c); }).join('');
+        var stars = sample(CREATURES, 2);
+        $('titleArt').innerHTML = (state.hero ? heroSVG(state.hero, 'is-hero') : '') +
+            stars.map(function (c) { return creatureSVG(c); }).join('');
+        $('heroBtnLabel').textContent = state.hero ? heroName() : 'הַדְּמוּת שֶׁלִּי';
         $('soundBtn').setAttribute('aria-pressed', String(state.sound));
         $('voiceBtn').setAttribute('aria-pressed', String(state.voice));
+    }
+
+    /* ============================================================== *
+     * מסך יצירת הדמות
+     * ============================================================== */
+
+    var draftHero = null;
+
+    function renderHero() {
+        if (!draftHero) draftHero = state.hero ? JSON.parse(JSON.stringify(state.hero)) : defaultHero();
+
+        $('heroPreview').innerHTML = heroSVG(draftHero);
+        var input = $('heroName');
+        if (input.value !== draftHero.name) input.value = draftHero.name;
+
+        var rows = [
+            { key: 'skin',  nik: 'צֶבַע הָעוֹר',  kind: 'swatch', list: LOOKS.skin },
+            { key: 'hair',  nik: 'הַתִּסְפֹּרֶת',   kind: 'hair',   list: LOOKS.hair },
+            { key: 'color', nik: 'צֶבַע הַשֵּׂעָר', kind: 'swatch', list: LOOKS.color },
+            { key: 'shirt', nik: 'הַחֻלְצָה',      kind: 'swatch', list: LOOKS.shirt }
+        ];
+
+        var box = $('heroPickers');
+        box.innerHTML = '';
+        rows.forEach(function (row) {
+            var wrap = document.createElement('div');
+            wrap.className = 'picker';
+            wrap.innerHTML = '<p class="picker-label">' + row.nik + '</p>';
+
+            var opts = document.createElement('div');
+            opts.className = 'picker-opts';
+
+            row.list.forEach(function (value, i) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'opt' + (draftHero[row.key] === i ? ' is-on' : '');
+
+                if (row.kind === 'swatch') {
+                    btn.innerHTML = '<span class="swatch" style="background:' + value + '"></span>';
+                    btn.setAttribute('aria-label', row.nik + ' ' + (i + 1));
+                } else {
+                    /* תצוגה מוקטנת של התספורת עצמה, לא שם באנגלית */
+                    btn.innerHTML = '<svg viewBox="0 0 100 80" class="hair-ico">' +
+                        '<circle cx="50" cy="50" r="26" fill="' + LOOKS.skin[draftHero.skin] + '"/>' +
+                        hairSVG(value, LOOKS.color[draftHero.color]) + '</svg>';
+                    btn.setAttribute('aria-label', 'תספורת ' + (i + 1));
+                }
+
+                btn.addEventListener('click', function () {
+                    draftHero[row.key] = i;
+                    sfx.tap();
+                    renderHero();
+                });
+                opts.appendChild(btn);
+            });
+
+            wrap.appendChild(opts);
+            box.appendChild(wrap);
+        });
     }
 
     /* ============================================================== *
@@ -565,6 +711,17 @@
             : 'אָסַפְתֶּם ' + state.caught.length + ' מִתּוֹךְ ' + total + ' חַבְרֵזִים ⭐';
         $('careLine').textContent = asking
             ? (asking === 1 ? '💛 חָבֵר אֶחָד מְחַכֶּה לְטִפּוּל' : '💛 ' + asking + ' חֲבֵרִים מְחַכִּים לְטִפּוּל')
+            : '';
+        renderBag();
+    }
+
+    /* מה שאספתם בטיולים */
+    function renderBag() {
+        var kinds = Object.keys(state.treasures).filter(function (e) { return state.treasures[e] > 0; });
+        $('bagLine').innerHTML = kinds.length
+            ? '🎒 ' + kinds.map(function (e) {
+                  return '<span class="bag-item">' + e + '<b>' + state.treasures[e] + '</b></span>';
+              }).join('')
             : '';
     }
 
@@ -1044,6 +1201,189 @@
     }
 
     /* ============================================================== *
+     * הטיול
+     *
+     * אתם והחברז שבחרתם הולכים יחד, דברים חמודים חולפים על פניכם,
+     * ולוחצים על מה שרוצים לאסוף. אי אפשר לפספס ואי אפשר להפסיד:
+     * דבר שלא נלחץ פשוט ממשיך הלאה, ואפשר לחזור הביתה בכל רגע.
+     * ============================================================== */
+
+    var TREASURES = [
+        { emoji: '🌼', nik: 'פֶּרַח',    say: 'פרח' },
+        { emoji: '🐚', nik: 'צֶדֶף',     say: 'צדף' },
+        { emoji: '🦋', nik: 'פַּרְפַּר',   say: 'פרפר' },
+        { emoji: '🍓', nik: 'תּוּת',     say: 'תות' },
+        { emoji: '🍄', nik: 'פִּטְרִיָּה', say: 'פטריה' },
+        { emoji: '⭐', nik: 'כּוֹכָב',    say: 'כוכב' },
+        { emoji: '🪶', nik: 'נוֹצָה',    say: 'נוצה' },
+        { emoji: '🐞', nik: 'חִפּוּשִׁית', say: 'חיפושית' },
+        { emoji: '🌰', nik: 'עֲרְמוֹן',  say: 'ערמון' },
+        { emoji: '💎', nik: 'גָּבִישׁ',   say: 'גביש' }
+    ];
+
+    var walk = { on: false, id: null, found: [], timer: null, chatter: null };
+
+    /* בוחרים חברז לטיול */
+    function openWalkPicker() {
+        if (!state.caught.length) {
+            sfx.oops();
+            say('קודם צריך למצוא חבר אחד. בואו נצא לטייל באי');
+            return;
+        }
+
+        var box = $('mapGrid');
+        show('map');
+        box.innerHTML = '';
+        $('scoreLine').textContent = 'עִם מִי יוֹצְאִים לְטִיּוּל?';
+        $('careLine').textContent = '';
+
+        state.caught.forEach(function (id) {
+            var c = byId(id);
+            var card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'area-card';
+            card.innerHTML = creatureSVG(c) + '<span class="area-label">' + c.nik + '</span>';
+            card.addEventListener('click', function () { sfx.page(); startWalk(id); });
+            box.appendChild(card);
+        });
+
+        var back = document.createElement('button');
+        back.type = 'button';
+        back.className = 'area-card';
+        back.innerHTML = '<span class="area-emoji">🗺️</span><span class="area-label">חֲזָרָה</span>';
+        back.addEventListener('click', function () { sfx.page(); renderMap(); });
+        box.appendChild(back);
+
+        say('עם מי יוצאים לטיול?');
+    }
+
+    function startWalk(id) {
+        walk = { on: true, id: id, found: [], timer: null, chatter: null };
+        var c = byId(id);
+
+        $('walkTitle').textContent = 'טִיּוּל עִם ' + c.nik;
+        $('walkCount').textContent = '';
+        $('walkEnd').innerHTML = '';
+        $('walkItems').innerHTML = '';
+        $('walkers').innerHTML =
+            '<span class="walker walker-hero">' + heroSVG(state.hero) + '</span>' +
+            '<span class="walker walker-pet">' + creatureSVG(c) + '</span>';
+        $('walkSpeech').textContent = 'יָאלְלָה, הוֹלְכִים!';
+
+        show('walk');
+        say('יאללה, הולכים! תלחצו על מה שרוצים לאסוף');
+
+        walk.timer = setInterval(spawnTreasure, 1900);
+        walk.chatter = setInterval(walkChatter, 9000);
+        setTimeout(spawnTreasure, 700);
+    }
+
+    function stopWalk() {
+        if (walk.timer) clearInterval(walk.timer);
+        if (walk.chatter) clearInterval(walk.chatter);
+        walk.timer = walk.chatter = null;
+        walk.on = false;
+    }
+
+    function walkChatter() {
+        if (!walk.on) return;
+        var c = byId(walk.id);
+        var lines = [
+            'כָּאן יָפֶה!',
+            'תִּרְאוּ מָה שָׁם!',
+            'אֲנִי אוֹהֵב לְטַיֵּל אִתְּכֶם.',
+            'עוֹד קְצָת וְנַגִּיעַ לַפִּיקְנִיק!'
+        ];
+        var line = pick(lines);
+        $('walkSpeech').textContent = c.nik + ': ' + line;
+        say(line.replace(/[֑-ׇ]/g, ''));
+    }
+
+    function spawnTreasure() {
+        if (!walk.on) return;
+
+        var treasure = pick(TREASURES);
+        var node = document.createElement('button');
+        node.type = 'button';
+        node.className = 'treasure';
+        node.textContent = treasure.emoji;
+        node.setAttribute('aria-label', treasure.say);
+        node.style.bottom = rand(18, 58) + '%';
+        node.style.animationDuration = rand(52, 70) / 10 + 's';
+
+        node.addEventListener('click', function () {
+            if (node.classList.contains('is-taken')) return;
+            node.classList.add('is-taken');
+            collect(treasure);
+        });
+
+        /* מה שלא נלחץ פשוט ממשיך הלאה. אין הפסד. */
+        node.addEventListener('animationend', function () { node.remove(); });
+
+        $('walkItems').appendChild(node);
+    }
+
+    function collect(treasure) {
+        walk.found.push(treasure);
+        state.treasures[treasure.emoji] = (state.treasures[treasure.emoji] || 0) + 1;
+
+        sfx.tap();
+        tone(880, 0, 0.16, 'triangle', 0.14);
+        tone(1319, 0.08, 0.22, 'sine', 0.12);
+
+        $('walkCount').textContent = walk.found.length ? '🎒' + walk.found.length : '';
+        $('walkSpeech').textContent = 'מָצָאתֶם ' + treasure.nik + '!';
+        say('מצאתם ' + treasure.say);
+
+        /* כל שני ממצאים משמחים את החברז */
+        if (walk.found.length % 2 === 0) cheer(walk.id);
+        save();
+
+        if (walk.found.length >= 6) endWalk(true);
+    }
+
+    function endWalk(arrived) {
+        if (!walk.on) return;
+        stopWalk();
+
+        var c = byId(walk.id);
+        $('walkItems').innerHTML = '';
+        confetti(arrived ? 34 : 12);
+        if (arrived) sfx.good();
+
+        var line = arrived
+            ? 'הִגַּעְנוּ לַפִּיקְנִיק! אֵיזֶה טִיּוּל יָפֶה.'
+            : 'טִיּוּל נָעִים, תּוֹדָה!';
+        $('walkSpeech').textContent = c.nik + ': ' + line;
+        say(line.replace(/[֑-ׇ]/g, ''));
+
+        var box = $('walkEnd');
+        box.innerHTML = '';
+
+        if (walk.found.length) {
+            var bag = document.createElement('p');
+            bag.className = 'walk-bag';
+            bag.innerHTML = '🎒 ' + walk.found.map(function (t) { return t.emoji; }).join(' ');
+            box.appendChild(bag);
+        }
+
+        var again = document.createElement('button');
+        again.type = 'button';
+        again.className = 'big-btn';
+        again.innerHTML = '<span class="btn-emoji">🚶</span> עוֹד טִיּוּל';
+        again.addEventListener('click', function () { sfx.page(); startWalk(walk.id); });
+
+        var home = document.createElement('button');
+        home.type = 'button';
+        home.className = 'big-btn ghost-btn';
+        home.innerHTML = '<span class="btn-emoji">🗺️</span> לַמַּפָּה';
+        home.addEventListener('click', function () { sfx.page(); show('map'); });
+
+        box.appendChild(again);
+        box.appendChild(home);
+    }
+
+    /* ============================================================== *
      * מסך הטיפול — האכלה, משחק ושינה
      * ============================================================== */
 
@@ -1284,8 +1624,32 @@
 
         $('playBtn').addEventListener('click', function () {
             sfx.page();
-            say('בואו נצא לטייל!');
+            /* בביקור הראשון בונים דמות לפני שיוצאים */
+            if (!state.hero) { show('hero'); say('קודם נבנה את הדמות שלכם'); return; }
+            say('בואו נצא לדרך!');
             show('map');
+        });
+
+        $('heroBtn').addEventListener('click', function () { sfx.page(); show('hero'); });
+
+        $('heroName').addEventListener('input', function () {
+            if (draftHero) draftHero.name = this.value.trim() || 'חָבֵר';
+        });
+
+        $('heroDone').addEventListener('click', function () {
+            state.hero = draftHero || defaultHero();
+            if (!state.hero.name) state.hero.name = 'חָבֵר';
+            save();
+            sfx.good();
+            confetti(20);
+            say('שלום, ' + heroName().replace(/[֑-ׇ]/g, '') + '! בואו נצא לדרך');
+            show('map');
+        });
+
+        $('walkBtn').addEventListener('click', function () { sfx.page(); openWalkPicker(); });
+        $('walkHome').addEventListener('click', function () {
+            sfx.page();
+            if (walk.on) endWalk(false); else show('map');
         });
 
         $('albumBtnTitle').addEventListener('click', function () { sfx.page(); show('album'); });
@@ -1321,6 +1685,10 @@
         $('resetBtn').addEventListener('click', function () {
             if (!window.confirm('להתחיל משחק חדש? כל החברזים שנאספו יימחקו.')) return;
             state.caught = [];
+            state.care = {};
+            state.treasures = {};
+            state.hero = null;
+            draftHero = null;
             save();
             sfx.page();
             renderTitle();
@@ -1343,7 +1711,8 @@
     /* נחשף לבדיקות ידניות מהקונסולה */
     window.Chavrezim = {
         CREATURES: CREATURES, AREAS: AREAS, state: state,
-        makePuzzle: makePuzzle, settle: settle, mood: mood, isAsking: isAsking, needsCare: needsCare
+        makePuzzle: makePuzzle, settle: settle, mood: mood, isAsking: isAsking, needsCare: needsCare,
+        TREASURES: TREASURES, heroSVG: heroSVG
     };
 
 })();
