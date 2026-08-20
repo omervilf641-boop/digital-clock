@@ -30,7 +30,7 @@
             <span class="btn-emoji" aria-hidden="true">▶</span> מַתְחִילִים
         </button>
         <button class="big-btn ghost-btn" id="albumBtnTitle" type="button">
-            <span class="btn-emoji" aria-hidden="true">📔</span> הָאַלְבּוֹם שֶׁלִּי
+            <span class="btn-emoji" aria-hidden="true">📔</span> הַחֲבֵרִים שֶׁלִּי
         </button>
         <div class="title-tools">
             <button class="tool" id="soundBtn" type="button" aria-pressed="true" title="צלילים">🔊</button>
@@ -48,6 +48,7 @@
         </header>
         <div class="map-grid" id="mapGrid"></div>
         <p class="score-line" id="scoreLine"></p>
+        <p class="care-line" id="careLine"></p>
     </section>
 
     <!-- ------------------------------------------------ מפגש עם חברז -->
@@ -71,11 +72,29 @@
         </div>
     </section>
 
+    <!-- ------------------------------------------------ טיפול בחברז -->
+    <section class="screen screen-pet" id="screenPet">
+        <header class="bar">
+            <button class="tool" data-goto="album" type="button" title="חזרה לחברים">📔</button>
+            <p class="bar-title" id="petName"></p>
+            <button class="tool" data-goto="map" type="button" title="למפה">🗺️</button>
+        </header>
+
+        <div class="pet-stage" id="petStage">
+            <div class="creature-slot" id="petSlot"></div>
+            <p class="speech" id="petSpeech"></p>
+        </div>
+
+        <div class="meters" id="petMeters"></div>
+        <div class="care-actions" id="careActions"></div>
+        <div class="care-panel" id="carePanel"></div>
+    </section>
+
     <!-- ------------------------------------------------ אלבום -->
     <section class="screen screen-album" id="screenAlbum">
         <header class="bar">
             <button class="tool" data-goto="map" type="button" title="חזרה">🗺️</button>
-            <p class="bar-title">הָאַלְבּוֹם שֶׁלִּי</p>
+            <p class="bar-title">הַחֲבֵרִים שֶׁלִּי</p>
             <button class="tool" data-goto="title" type="button" title="הבית">🏠</button>
         </header>
         <div class="album-grid" id="albumGrid"></div>

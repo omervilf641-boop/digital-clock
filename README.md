@@ -147,19 +147,40 @@ five- or six-year-old. Open it directly:
 open game.html      # or: python3 -m http.server 8000  →  localhost:8000/game.html
 ```
 
-Twelve original creatures live across four areas. Meeting one means solving a single tiny puzzle —
-counting, colours, shapes, same/different, big/small — and then throwing a friendship star. The
-rules that matter are the ones about being five:
+Twenty-one original creatures live across seven areas. Meeting one means solving a single tiny
+puzzle and then throwing a friendship star. The rules that matter are the ones about being five:
 
 - **Nothing can be lost.** A wrong tap is answered with "almost, try again", never with a failure.
 - **No timers**, no score to beat, no game-over screen.
 - **Everything is read aloud** (`speechSynthesis`, `he-IL`), so a child who can't read yet plays alone.
 - Every control is a thumb-sized button; all text is vowelled for a parent reading along.
 
+Each area brings its own puzzles, and the new ones ask for a bit more than the last:
+
+| Area | Puzzles it introduces |
+|---|---|
+| 🏖️ חוף הים · 🌴 יער הג'ונגל | matching, counting to 5, colours, big/small |
+| 🌋 הר האש · 🌟 שביל הכוכבים | shapes, odd-one-out |
+| 💎 מערת הגבישים | **patterns** — ABAB, then AAB and ABC |
+| ☁️ ענני הסוכר | **addition** — two groups, sums to 10 |
+| 🤖 עיר הרובוטים | **memory** (what vanished) and **first letters** of Hebrew words |
+
 Areas unlock as friends are collected, and the album keeps its silhouettes until you meet each one.
+
+### Looking after them
+
+Every friend you catch has three needs — fed, happy, rested — that drift down slowly over real
+time. Tapping a friend in the album opens their care screen: feed them (each type has a favourite
+food, but any food works), tickle them three times, or put them to sleep, which dims the screen for
+a short lullaby while they nap.
+
+The Tamagotchi guilt loop is deliberately absent. A need never falls below 1, a week away costs no
+more than a day away does, nothing ever gets sick or dies, and the worst thing a creature will say
+is that it's a little hungry. The album nudges only when someone is genuinely low.
+
 Progress is saved in `localStorage`; the 🔊, 🗣️ and ↺ buttons on the title screen toggle sound,
-speech, and start over. No build step, no dependencies here either — `game.html`, `game.css`,
-`game.js`.
+speech, and start over. No build step and no dependencies — `game.html`, `game.css`, `game.js`,
+plus one webfont that falls back cleanly when offline.
 
 ## License
 
