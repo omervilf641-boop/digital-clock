@@ -49,6 +49,9 @@
             <p class="bar-title">לְאָן נֵלֵךְ?</p>
             <button class="tool" data-goto="album" type="button" title="האלבום שלי">📔</button>
         </header>
+        <button class="big-btn shop-btn" id="shopBtn" type="button">
+            <span class="btn-emoji" aria-hidden="true">🏪</span> הַחֲנוּת
+        </button>
         <button class="big-btn walk-btn" id="walkBtn" type="button">
             <span class="btn-emoji" aria-hidden="true">🚶</span> לָצֵאת לְטִיּוּל
         </button>
@@ -118,6 +121,23 @@
 
         <p class="speech walk-speech" id="walkSpeech"></p>
         <div class="walk-end" id="walkEnd"></div>
+    </section>
+
+    <!-- ------------------------------------------------ החנות -->
+    <section class="screen screen-shop" id="screenShop">
+        <header class="bar">
+            <button class="tool" data-goto="map" type="button" title="חזרה למפה">🗺️</button>
+            <p class="bar-title">הַחֲנוּת שֶׁל צִדְפּוֹנִי</p>
+            <span class="tool tool-ghost purse" id="purse"></span>
+        </header>
+
+        <div class="shop-top">
+            <div class="shopkeeper" id="shopkeeper"></div>
+            <p class="speech" id="shopSpeech"></p>
+        </div>
+
+        <div class="shelf" id="shelfWear"></div>
+        <div class="shelf" id="shelfHair"></div>
     </section>
 
     <!-- ------------------------------------------------ טיפול בחברז -->

@@ -124,6 +124,79 @@
     ];
 
     /* ============================================================== *
+     * אביזרים
+     *
+     * כל אביזר יודע לצייר את עצמו על גוף החברז (מערכת הצירים של
+     * creatureSVG), ותופס משבצת אחת: ראש, פנים, צוואר או יד.
+     * ============================================================== */
+
+    var COIN = '🐚';
+
+    var ACCESSORIES = [
+        { id: 'crown', nik: 'כֶּתֶר', say: 'כתר', slot: 'head', price: 8,
+          draw: function () {
+              return '<path d="M40 32 L46 14 L53 26 L60 10 L67 26 L74 14 L80 32 Z" ' +
+                     'fill="#ffd93d" stroke="#d9ac16" stroke-width="2.5" stroke-linejoin="round"/>' +
+                     '<circle cx="60" cy="18" r="3" fill="#ff5f7e"/>';
+          } },
+        { id: 'cap', nik: 'כּוֹבַע', say: 'כובע', slot: 'head', price: 4,
+          draw: function () {
+              return '<path d="M36 32 a24 22 0 0 1 48 0 z" fill="#ff5f7e"/>' +
+                     '<ellipse cx="60" cy="32" rx="31" ry="5" fill="#d43a5c"/>' +
+                     '<circle cx="60" cy="12" r="4" fill="#ffd93d"/>';
+          } },
+        { id: 'ribbon', nik: 'סֶרֶט', say: 'סרט', slot: 'head', price: 3,
+          draw: function () {
+              return '<g transform="translate(86 34)">' +
+                     '<path d="M0 0 L-14 -8 L-14 8 Z" fill="#ff8fc4"/>' +
+                     '<path d="M0 0 L14 -8 L14 8 Z" fill="#ff8fc4"/>' +
+                     '<circle cx="0" cy="0" r="5" fill="#e2699d"/></g>';
+          } },
+        { id: 'flower', nik: 'פֶּרַח', say: 'פרח', slot: 'head', price: 3,
+          draw: function () {
+              var petals = '';
+              for (var i = 0; i < 5; i++) {
+                  var a = (i / 5) * Math.PI * 2;
+                  petals += '<circle cx="' + (34 + Math.cos(a) * 8).toFixed(1) +
+                            '" cy="' + (34 + Math.sin(a) * 8).toFixed(1) +
+                            '" r="6" fill="#ffb8d9" stroke="#e2699d" stroke-width="1.2"/>';
+              }
+              return petals + '<circle cx="34" cy="34" r="5" fill="#ffd93d"/>';
+          } },
+        { id: 'glasses', nik: 'מִשְׁקָפַיִם', say: 'משקפיים', slot: 'face', price: 6,
+          draw: function () {
+              return '<g fill="#2b3566" opacity=".88">' +
+                     '<rect x="34" y="50" width="24" height="17" rx="8"/>' +
+                     '<rect x="62" y="50" width="24" height="17" rx="8"/></g>' +
+                     '<rect x="57" y="56" width="6" height="4" fill="#2b3566"/>';
+          } },
+        { id: 'scarf', nik: 'צָעִיף', say: 'צעיף', slot: 'neck', price: 5,
+          draw: function () {
+              return '<path d="M38 78 q22 11 44 0 v8 q-22 11 -44 0 z" fill="#4fd6b0"/>' +
+                     '<path d="M76 84 q8 10 4 20 l-9 -2 q4 -10 1 -17 z" fill="#3bbd99"/>';
+          } },
+        { id: 'bowtie', nik: 'עֲנִיבַת פַּרְפַּר', say: 'עניבת פרפר', slot: 'neck', price: 4,
+          draw: function () {
+              return '<g transform="translate(60 82)">' +
+                     '<path d="M0 0 L-13 -8 L-13 8 Z" fill="#a97bff"/>' +
+                     '<path d="M0 0 L13 -8 L13 8 Z" fill="#a97bff"/>' +
+                     '<circle cx="0" cy="0" r="4.5" fill="#7b4fd6"/></g>';
+          } },
+        { id: 'balloon', nik: 'בָּלוֹן', say: 'בלון', slot: 'hand', price: 6,
+          draw: function () {
+              return '<path d="M100 76 q6 -22 -2 -40" stroke="#9aa8c9" stroke-width="2" fill="none"/>' +
+                     '<ellipse cx="97" cy="26" rx="13" ry="15" fill="#ff5f7e"/>' +
+                     '<ellipse cx="93" cy="21" rx="4" ry="5" fill="#fff" opacity=".55"/>';
+          } }
+    ];
+
+    var SLOTS = ['head', 'face', 'neck', 'hand'];
+
+    function accessoryById(id) {
+        return ACCESSORIES.filter(function (a) { return a.id === id; })[0] || null;
+    }
+
+    /* ============================================================== *
      * מצב המשחק
      * ============================================================== */
 
@@ -131,7 +204,12 @@
 
     /* care: לכל חברז שנאסף — כמה הוא שבע, שמח ונח, ומתי נבדק לאחרונה.
        הערכים 1..5. אף פעם לא 0: חברז לא יכול להיות אומלל, רק "צריך אותך". */
-    var state = { caught: [], care: {}, hero: null, treasures: {}, sound: true, voice: true };
+    var state = {
+        caught: [], care: {}, hero: null, treasures: {},
+        owned: [],      /* אביזרים ותספורות שנקנו */
+        worn: {},       /* מה כל חברז לובש: { id: { head: 'crown', ... } } */
+        sound: true, voice: true
+    };
 
     function load() {
         try {
@@ -144,6 +222,8 @@
             if (saved.care && typeof saved.care === 'object') state.care = saved.care;
             if (saved.hero && typeof saved.hero === 'object') state.hero = saved.hero;
             if (saved.treasures && typeof saved.treasures === 'object') state.treasures = saved.treasures;
+            if (Array.isArray(saved.owned)) state.owned = saved.owned;
+            if (saved.worn && typeof saved.worn === 'object') state.worn = saved.worn;
             if (typeof saved.sound === 'boolean') state.sound = saved.sound;
             if (typeof saved.voice === 'boolean') state.voice = saved.voice;
         } catch (err) {
@@ -384,6 +464,16 @@
                '<path d="M50 72 q10 10 20 0" stroke="' + c.dark + '" stroke-width="3.4" fill="none" stroke-linecap="round"/>';
     }
 
+    /* מה שהחברז לובש, מצויר מעל הגוף */
+    function outfitSVG(c) {
+        var worn = c.fixedOutfit || state.worn[c.id];
+        if (!worn) return '';
+        return SLOTS.map(function (slot) {
+            var item = worn[slot] && accessoryById(worn[slot]);
+            return item ? item.draw() : '';
+        }).join('');
+    }
+
     function creatureSVG(c, cls, asleep) {
         return '' +
         '<svg viewBox="0 0 120 120" class="' + (cls || '') + '" role="img" aria-label="' + c.name + '">' +
@@ -403,6 +493,7 @@
             '<circle cx="88" cy="74" r="7" fill="#ff8fc4" opacity=".55"/>' +
             /* פנים */
             (asleep ? sleepingFace(c) : awakeFace(c)) +
+            outfitSVG(c) +
         '</svg>';
     }
 
@@ -412,10 +503,22 @@
 
     var LOOKS = {
         skin:  ['#f7d7c4', '#eab68f', '#c78a5e', '#8d5a3b'],
-        hair:  ['short', 'long', 'curly', 'ponytail', 'bun'],
+        hair:  ['short', 'long', 'curly', 'ponytail', 'bun', 'spiky', 'braids', 'wavy'],
         color: ['#3b2a20', '#7a4a24', '#d9a441', '#e86a4a', '#5b4a8f', '#3f9ad9'],
         shirt: ['#ff8fc4', '#4ea9ff', '#4fd6b0', '#ffd93d', '#a97bff', '#ff7a59']
     };
+
+    /* התספורות האחרונות נמכרות בחנות */
+    var HAIR_SHOP = {
+        spiky:  { nik: 'תִּסְפֹּרֶת קוֹצִים', say: 'תספורת קוצים', price: 5 },
+        braids: { nik: 'צַמּוֹת',            say: 'צמות',          price: 5 },
+        wavy:   { nik: 'שֵׂעָר גַּלִּי',       say: 'שיער גלי',      price: 6 }
+    };
+
+    function hairLocked(index) {
+        var style = LOOKS.hair[index];
+        return !!HAIR_SHOP[style] && !owns('hair:' + style);
+    }
 
     function defaultHero() {
         return { name: 'חָבֵר', skin: 0, hair: 0, color: 0, shirt: 0 };
@@ -439,6 +542,18 @@
                        '<circle cx="80" cy="40" r="7" fill="' + color + '"/>' + cap;
             case 'bun':
                 return '<circle cx="50" cy="14" r="11" fill="' + color + '"/>' + cap;
+            case 'spiky':
+                return cap +
+                       '<path d="M28 32 L24 10 L40 26 L44 6 L54 24 L60 4 L66 24 L76 6 L80 26 ' +
+                       'L96 10 L72 34 Z" fill="' + color + '"/>';
+            case 'braids':
+                return '<g fill="' + color + '">' +
+                       '<circle cx="20" cy="60" r="8"/><circle cx="18" cy="74" r="7"/><circle cx="19" cy="86" r="6"/>' +
+                       '<circle cx="80" cy="60" r="8"/><circle cx="82" cy="74" r="7"/><circle cx="81" cy="86" r="6"/>' +
+                       '</g>' + cap;
+            case 'wavy':
+                return '<path d="M18 44 q6 16 -2 26 q10 6 6 22 h14 q-6 -26 2 -48 z" fill="' + color + '"/>' +
+                       '<path d="M82 44 q-6 16 2 26 q-10 6 -6 22 h-14 q6 -26 -2 -48 z" fill="' + color + '"/>' + cap;
             default:
                 return cap;
         }
@@ -574,6 +689,7 @@
         map:   'screenMap',
         play:  'screenPlay',
         walk:  'screenWalk',
+        shop:  'screenShop',
         pet:   'screenPet',
         album: 'screenAlbum'
     };
@@ -587,6 +703,7 @@
         if (name === 'album') renderAlbum();
         if (name === 'title') renderTitle();
         if (name === 'hero') renderHero();
+        if (name === 'shop') renderShop();
         if (name !== 'walk') stopWalk();
     }
 
@@ -611,6 +728,7 @@
 
     function renderHero() {
         if (!draftHero) draftHero = state.hero ? JSON.parse(JSON.stringify(state.hero)) : defaultHero();
+        if (hairLocked(draftHero.hair)) draftHero.hair = 0;
 
         $('heroPreview').innerHTML = heroSVG(draftHero);
         var input = $('heroName');
@@ -643,13 +761,22 @@
                     btn.setAttribute('aria-label', row.nik + ' ' + (i + 1));
                 } else {
                     /* תצוגה מוקטנת של התספורת עצמה, לא שם באנגלית */
+                    var locked = hairLocked(i);
+                    if (locked) btn.classList.add('is-locked');
                     btn.innerHTML = '<svg viewBox="0 0 100 80" class="hair-ico">' +
                         '<circle cx="50" cy="50" r="26" fill="' + LOOKS.skin[draftHero.skin] + '"/>' +
-                        hairSVG(value, LOOKS.color[draftHero.color]) + '</svg>';
-                    btn.setAttribute('aria-label', 'תספורת ' + (i + 1));
+                        hairSVG(value, LOOKS.color[draftHero.color]) + '</svg>' +
+                        (locked ? '<span class="lock-pin">🔒</span>' : '');
+                    btn.setAttribute('aria-label', 'תספורת ' + (i + 1) + (locked ? ', נמכרת בחנות' : ''));
                 }
 
                 btn.addEventListener('click', function () {
+                    if (row.kind === 'hair' && hairLocked(i)) {
+                        sfx.oops();
+                        var info = HAIR_SHOP[LOOKS.hair[i]];
+                        say(info.say + ' נמכרת בחנות של צדפוני, ב' + info.price + ' צדפים');
+                        return;
+                    }
                     draftHero[row.key] = i;
                     sfx.tap();
                     renderHero();
@@ -714,6 +841,16 @@
             : '';
         renderBag();
     }
+
+    /* צדפים הם הכסף של האי */
+    function coins() { return state.treasures[COIN] || 0; }
+
+    function spend(n) {
+        state.treasures[COIN] = Math.max(0, coins() - n);
+        save();
+    }
+
+    function owns(id) { return state.owned.indexOf(id) !== -1; }
 
     /* מה שאספתם בטיולים */
     function renderBag() {
@@ -1201,6 +1338,129 @@
     }
 
     /* ============================================================== *
+     * החנות של צדפוני
+     *
+     * צדפים שנאספו בטיולים הם הכסף. אין חוב, אין עונש על קנייה,
+     * וכל דבר שנקנה נשאר לתמיד.
+     * ============================================================== */
+
+    /* בובת תצוגה ניטרלית, כדי לראות איך האביזר נראה על חברז */
+    var MANNEQUIN = {
+        id: '__shop__', name: 'בובה', nik: 'בּוּבָּה', type: 'water',
+        body: '#cfd8ee', belly: '#eef2ff', dark: '#9aa8c9', ears: 'round'
+    };
+
+    /* המוכר: חברז ותיק עם כובע */
+    var SHOPKEEPER = {
+        id: '__keeper__', name: 'צדפוני', nik: 'צִדְפּוֹנִי', type: 'water',
+        body: '#8fd6c4', belly: '#e9fbf6', dark: '#46a58e', ears: 'floppy',
+        fixedOutfit: { head: 'cap', neck: 'bowtie' }
+    };
+
+    function previewSVG(item) {
+        return '<svg viewBox="0 0 120 120" class="wear-preview" aria-hidden="true">' +
+            '<ellipse cx="28" cy="34" rx="15" ry="15" fill="' + MANNEQUIN.body + '"/>' +
+            '<ellipse cx="92" cy="34" rx="15" ry="15" fill="' + MANNEQUIN.body + '"/>' +
+            '<ellipse cx="60" cy="68" rx="36" ry="34" fill="' + MANNEQUIN.body + '"/>' +
+            '<ellipse cx="60" cy="84" rx="21" ry="15" fill="' + MANNEQUIN.belly + '"/>' +
+            '<circle cx="47" cy="59" r="5" fill="#1f2a52"/>' +
+            '<circle cx="75" cy="59" r="5" fill="#1f2a52"/>' +
+            '<path d="M50 72 q10 9 20 0" stroke="' + MANNEQUIN.dark +
+            '" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+            item.draw() +
+        '</svg>';
+    }
+
+    function renderShop() {
+        $('purse').textContent = COIN + coins();
+        $('shopkeeper').innerHTML = creatureSVG(SHOPKEEPER);
+
+        var line = coins() >= 3
+            ? 'שָׁלוֹם! יֵשׁ לָכֶם ' + coins() + ' צְדָפִים. מָה בּוֹחֲרִים?'
+            : 'שָׁלוֹם! צְאוּ לְטִיּוּל וְאִסְפוּ צְדָפִים, וְאָז נִסְתַּדֵּר.';
+        $('shopSpeech').textContent = line;
+
+        buildShelf($('shelfWear'), 'אֲבִיזָרִים לַחֲבֵרִים', ACCESSORIES.map(function (item) {
+            return {
+                key: item.id,
+                nik: item.nik,
+                say: item.say,
+                price: item.price,
+                art: previewSVG(item)
+            };
+        }));
+
+        buildShelf($('shelfHair'), 'תִּסְפֹּרֶת בִּשְׁבִילִי', Object.keys(HAIR_SHOP).map(function (style) {
+            var info = HAIR_SHOP[style];
+            var hero = state.hero || defaultHero();
+            return {
+                key: 'hair:' + style,
+                nik: info.nik,
+                say: info.say,
+                price: info.price,
+                art: '<svg viewBox="0 0 100 90" class="wear-preview">' +
+                     '<circle cx="50" cy="50" r="26" fill="' + LOOKS.skin[hero.skin] + '"/>' +
+                     '<circle cx="41" cy="52" r="4" fill="#1f2a52"/>' +
+                     '<circle cx="59" cy="52" r="4" fill="#1f2a52"/>' +
+                     hairSVG(style, LOOKS.color[hero.color]) + '</svg>'
+            };
+        }));
+    }
+
+    function buildShelf(box, title, items) {
+        box.innerHTML = '<h2 class="shelf-title">' + title + '</h2>';
+
+        var grid = document.createElement('div');
+        grid.className = 'shelf-grid';
+
+        items.forEach(function (item) {
+            var have = owns(item.key);
+            var afford = coins() >= item.price;
+
+            var card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'shop-card' + (have ? ' is-owned' : (afford ? '' : ' is-dear'));
+            card.innerHTML = item.art +
+                '<span class="shop-name">' + item.nik + '</span>' +
+                '<span class="shop-price">' + (have ? '✔ יֵשׁ לָכֶם' : COIN + ' ' + item.price) + '</span>';
+            card.setAttribute('aria-label', item.say + (have ? ', כבר שלכם' : ', ' + item.price + ' צדפים'));
+
+            card.addEventListener('click', function () { buy(item, have); });
+            grid.appendChild(card);
+        });
+
+        box.appendChild(grid);
+    }
+
+    function buy(item, have) {
+        if (have) {
+            sfx.tap();
+            $('shopSpeech').textContent = 'זֶה כְּבָר שֶׁלָּכֶם! תִּלְבְּשׁוּ אוֹתוֹ אֵצֶל הַחֲבֵרִים.';
+            say('זה כבר שלכם. תלבישו אותו אצל החברים');
+            return;
+        }
+
+        if (coins() < item.price) {
+            /* לא נזיפה — רק כמה עוד חסר */
+            sfx.oops();
+            var missing = item.price - coins();
+            $('shopSpeech').textContent = 'חָסֵר עוֹד ' + missing + ' ' +
+                (missing === 1 ? 'צֶדֶף' : 'צְדָפִים') + '. צְאוּ לְטִיּוּל!';
+            say('חסר עוד ' + missing + (missing === 1 ? ' צדף' : ' צדפים') + '. צאו לטיול');
+            return;
+        }
+
+        spend(item.price);
+        state.owned.push(item.key);
+        save();
+        sfx.good();
+        confetti(22);
+        $('shopSpeech').textContent = 'קָנִיתֶם ' + item.nik + '! תֵּהָנוּ.';
+        say('קניתם ' + item.say);
+        renderShop();
+    }
+
+    /* ============================================================== *
      * הטיול
      *
      * אתם והחברז שבחרתם הולכים יחד, דברים חמודים חולפים על פניכם,
@@ -1302,7 +1562,10 @@
     function spawnTreasure() {
         if (!walk.on) return;
 
-        var treasure = pick(TREASURES);
+        /* צדפים הם הכסף, אז הם נופלים תכופות יותר משאר המזכרות */
+        var treasure = Math.random() < 0.42
+            ? TREASURES.filter(function (t) { return t.emoji === COIN; })[0]
+            : pick(TREASURES);
         var node = document.createElement('button');
         node.type = 'button';
         node.className = 'treasure';
@@ -1351,8 +1614,13 @@
         confetti(arrived ? 34 : 12);
         if (arrived) sfx.good();
 
+        if (arrived) {
+            state.treasures[COIN] = coins() + 2;   /* בונוס הגעה, כדי שכל טיול משתלם */
+            save();
+        }
+
         var line = arrived
-            ? 'הִגַּעְנוּ לַפִּיקְנִיק! אֵיזֶה טִיּוּל יָפֶה.'
+            ? 'הִגַּעְנוּ לַפִּיקְנִיק! קִבַּלְתֶּם 2 צְדָפִים בְּמַתָּנָה.'
             : 'טִיּוּל נָעִים, תּוֹדָה!';
         $('walkSpeech').textContent = c.nik + ': ' + line;
         say(line.replace(/[֑-ׇ]/g, ''));
@@ -1441,7 +1709,8 @@
         [
             { key: 'feed',  emoji: '🍎', nik: 'לְהַאֲכִיל', run: panelFeed },
             { key: 'play',  emoji: '🎈', nik: 'לְשַׂחֵק',   run: panelPlay },
-            { key: 'sleep', emoji: '😴', nik: 'לִישֹׁן',    run: panelSleep }
+            { key: 'sleep', emoji: '😴', nik: 'לִישֹׁן',    run: panelSleep },
+            { key: 'wear',  emoji: '👑', nik: 'לְהַלְבִּישׁ', run: panelWear }
         ].forEach(function (action) {
             var btn = document.createElement('button');
             btn.type = 'button';
@@ -1533,6 +1802,55 @@
         };
 
         slot.addEventListener('click', tickle);
+    }
+
+    /* --- הלבשה: לוחצים על אביזר כדי ללבוש, ושוב כדי להוריד --- */
+    function panelWear() {
+        var c = byId(petId);
+        var panel = $('carePanel');
+        var mine = ACCESSORIES.filter(function (a) { return owns(a.id); });
+
+        if (!mine.length) {
+            panel.innerHTML = '<p class="panel-q">עוֹד אֵין אֲבִיזָרִים</p>' +
+                              '<p class="panel-hint">אֶפְשָׁר לִקְנוֹת בַּחֲנוּת שֶׁל צִדְפּוֹנִי 🏪</p>';
+            say('עוד אין אביזרים. אפשר לקנות בחנות של צדפוני');
+            return;
+        }
+
+        panel.innerHTML = '<p class="panel-q">מָה נִלְבַּשׁ?</p>';
+        say('מה נלבש?');
+
+        var worn = state.worn[c.id] || {};
+        var row = document.createElement('div');
+        row.className = 'choices';
+
+        mine.forEach(function (item) {
+            var on = worn[item.slot] === item.id;
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'choice wear-choice' + (on ? ' is-right' : '');
+            btn.innerHTML = previewSVG(item);
+            btn.setAttribute('aria-label', item.say + (on ? ', לבוש' : ''));
+
+            btn.addEventListener('click', function () {
+                var current = state.worn[c.id] || (state.worn[c.id] = {});
+                if (current[item.slot] === item.id) {
+                    delete current[item.slot];          /* לחיצה שנייה מורידה */
+                    say('הורדנו את ה' + item.say);
+                } else {
+                    current[item.slot] = item.id;       /* משבצת אחת לכל סוג */
+                    say(c.name + ' לובש ' + item.say);
+                }
+                save();
+                sfx.tap();
+                renderPet();
+                panelWear();
+            });
+
+            row.appendChild(btn);
+        });
+
+        panel.appendChild(row);
     }
 
     /* --- שינה: מחשיכים, שיר ערש קצר, והוא מתעורר רענן --- */
@@ -1647,6 +1965,7 @@
         });
 
         $('walkBtn').addEventListener('click', function () { sfx.page(); openWalkPicker(); });
+        $('shopBtn').addEventListener('click', function () { sfx.page(); show('shop'); });
         $('walkHome').addEventListener('click', function () {
             sfx.page();
             if (walk.on) endWalk(false); else show('map');
@@ -1687,6 +2006,8 @@
             state.caught = [];
             state.care = {};
             state.treasures = {};
+            state.owned = [];
+            state.worn = {};
             state.hero = null;
             draftHero = null;
             save();
@@ -1712,7 +2033,8 @@
     window.Chavrezim = {
         CREATURES: CREATURES, AREAS: AREAS, state: state,
         makePuzzle: makePuzzle, settle: settle, mood: mood, isAsking: isAsking, needsCare: needsCare,
-        TREASURES: TREASURES, heroSVG: heroSVG
+        TREASURES: TREASURES, heroSVG: heroSVG,
+        ACCESSORIES: ACCESSORIES, HAIR_SHOP: HAIR_SHOP, coins: coins, owns: owns
     };
 
 })();

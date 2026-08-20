@@ -1038,3 +1038,102 @@ body {
     color: var(--ink);
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
 }
+
+/* ------------------------------------------------------------------ *
+ * החנות
+ * ------------------------------------------------------------------ */
+
+.shop-btn {
+    background: linear-gradient(180deg, #ffd98a, #ffbf47);
+    box-shadow: 0 10px 0 #d9932a, var(--shadow-soft);
+    color: var(--ink);
+    margin-bottom: 12px;
+}
+
+.shop-btn:active { box-shadow: 0 2px 0 #d9932a; }
+
+.purse {
+    display: grid;
+    place-items: center;
+    font-size: 19px;
+    font-weight: 800;
+    background: var(--card);
+    box-shadow: var(--shadow);
+    pointer-events: none;
+}
+
+.shop-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.shopkeeper svg {
+    width: clamp(110px, 30vw, 150px);
+    height: auto;
+    animation: bob 2.8s ease-in-out infinite;
+}
+
+.shelf { margin-top: 20px; }
+
+.shelf-title {
+    margin: 0 0 12px;
+    text-align: center;
+    font-size: clamp(19px, 5vw, 23px);
+    font-weight: 900;
+    text-shadow: 0 2px 0 rgba(255, 255, 255, 0.75);
+}
+
+.shelf-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+    gap: 12px;
+}
+
+.shop-card {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    padding: 10px 6px 12px;
+    font: inherit;
+    background: var(--card);
+    border: none;
+    border-radius: 22px;
+    box-shadow: 0 8px 0 rgba(31, 42, 82, 0.13), var(--shadow-soft);
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.shop-card:active { transform: translateY(6px); box-shadow: 0 2px 0 rgba(31, 42, 82, 0.13); }
+.shop-card.is-owned { outline: 4px solid var(--mint); outline-offset: -4px; }
+.shop-card.is-dear { opacity: 0.62; }
+
+.wear-preview { width: 100%; max-width: 96px; height: auto; display: block; }
+
+.shop-name {
+    font-size: clamp(14px, 3.8vw, 17px);
+    font-weight: 800;
+    text-align: center;
+}
+
+.shop-price {
+    font-size: clamp(15px, 4vw, 18px);
+    font-weight: 800;
+    color: var(--ink-soft);
+}
+
+.shop-card.is-owned .shop-price { color: #2e9b78; }
+
+.wear-choice { min-width: 104px; padding: 6px; }
+.wear-choice .wear-preview { max-width: 84px; }
+
+/* תספורת שעוד לא נקנתה */
+
+.opt.is-locked { position: relative; opacity: 0.55; }
+
+.opt .lock-pin {
+    position: absolute;
+    inset-block-start: 2px;
+    inset-inline-end: 4px;
+    font-size: 15px;
+}

@@ -184,6 +184,22 @@ can be missed or lost, and you can turn back at any moment.
 
 Walking together cheers the friend up, so it's the third way to look after them.
 
+### Shells, and what to spend them on
+
+Shells (🐚) are the island's money. They turn up on walks more often than the other keepsakes, and
+arriving at the picnic pays two more, so no walk comes back empty-handed — about six a trip.
+
+צִדְפּוֹנִי's shop sells eight accessories for your friends — crown, cap, ribbon, flower, glasses,
+scarf, bow tie, balloon — priced 3 to 8 shells, plus three extra hairstyles for your own character
+that stay locked in the builder until bought. Each accessory is drawn onto the creature itself and
+occupies one slot (head, face, neck, hand), so a friend can wear a crown, glasses and a scarf at
+once. Tap an item on their care screen to put it on, tap again to take it off; whatever they're
+wearing follows them into the album, onto walks, and into every puzzle.
+
+Nothing here can go wrong either: prices are checked before a purchase, there's no debt, everything
+bought is kept forever, and being short is answered with how many more shells to find rather than a
+refusal.
+
 ### Looking after them
 
 Every friend you catch has three needs — fed, happy, rested — that drift down slowly over real
@@ -195,7 +211,8 @@ The Tamagotchi guilt loop is deliberately absent. A need never falls below 1, a 
 more than a day away does, nothing ever gets sick or dies, and the worst thing a creature will say
 is that it's a little hungry. The album nudges only when someone is genuinely low.
 
-Progress — friends, their needs, your character and your bag — is saved in `localStorage`; the 🔊,
+Progress — friends, their needs, your character, your bag and everything you've bought — is saved
+in `localStorage`; the 🔊,
 🗣️ and ↺ buttons on the title screen toggle sound, speech, and start over. No build step and no dependencies — `game.html`, `game.css`, `game.js`,
 plus one webfont that falls back cleanly when offline.
 
