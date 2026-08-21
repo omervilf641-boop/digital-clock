@@ -1038,3 +1038,437 @@ body {
     color: var(--ink);
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
 }
+
+/* ------------------------------------------------------------------ *
+ * החנות
+ * ------------------------------------------------------------------ */
+
+.shop-btn {
+    background: linear-gradient(180deg, #ffd98a, #ffbf47);
+    box-shadow: 0 10px 0 #d9932a, var(--shadow-soft);
+    color: var(--ink);
+    margin-bottom: 12px;
+}
+
+.shop-btn:active { box-shadow: 0 2px 0 #d9932a; }
+
+.purse {
+    display: grid;
+    place-items: center;
+    font-size: 19px;
+    font-weight: 800;
+    background: var(--card);
+    box-shadow: var(--shadow);
+    pointer-events: none;
+}
+
+.shop-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.shopkeeper svg {
+    width: clamp(110px, 30vw, 150px);
+    height: auto;
+    animation: bob 2.8s ease-in-out infinite;
+}
+
+.shelf { margin-top: 20px; }
+
+.shelf-title {
+    margin: 0 0 12px;
+    text-align: center;
+    font-size: clamp(19px, 5vw, 23px);
+    font-weight: 900;
+    text-shadow: 0 2px 0 rgba(255, 255, 255, 0.75);
+}
+
+.shelf-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+    gap: 12px;
+}
+
+.shop-card {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    padding: 10px 6px 12px;
+    font: inherit;
+    background: var(--card);
+    border: none;
+    border-radius: 22px;
+    box-shadow: 0 8px 0 rgba(31, 42, 82, 0.13), var(--shadow-soft);
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.shop-card:active { transform: translateY(6px); box-shadow: 0 2px 0 rgba(31, 42, 82, 0.13); }
+.shop-card.is-owned { outline: 4px solid var(--mint); outline-offset: -4px; }
+.shop-card.is-dear { opacity: 0.62; }
+
+.wear-preview { width: 100%; max-width: 96px; height: auto; display: block; }
+
+.shop-name {
+    font-size: clamp(14px, 3.8vw, 17px);
+    font-weight: 800;
+    text-align: center;
+}
+
+.shop-price {
+    font-size: clamp(15px, 4vw, 18px);
+    font-weight: 800;
+    color: var(--ink-soft);
+}
+
+.shop-card.is-owned .shop-price { color: #2e9b78; }
+
+.wear-choice { min-width: 104px; padding: 6px; }
+.wear-choice .wear-preview { max-width: 84px; }
+
+/* תספורת שעוד לא נקנתה */
+
+.opt.is-locked { position: relative; opacity: 0.55; }
+
+.opt .lock-pin {
+    position: absolute;
+    inset-block-start: 2px;
+    inset-inline-end: 4px;
+    font-size: 15px;
+}
+
+/* ------------------------------------------------------------------ *
+ * חברז נדיר בטיול
+ * ------------------------------------------------------------------ */
+
+.rare-sighting {
+    padding: 0;
+    filter: drop-shadow(0 0 12px rgba(255, 217, 61, 0.95));
+}
+
+.rare-sighting svg { width: clamp(56px, 15vw, 76px); height: auto; display: block; }
+
+.rare-sighting .sparkle {
+    position: absolute;
+    inset-block-start: -10px;
+    inset-inline-end: -6px;
+    font-size: 26px;
+    animation: twinkle 0.9s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+    0%, 100% { transform: scale(1) rotate(0); opacity: 1; }
+    50%      { transform: scale(1.35) rotate(18deg); opacity: 0.75; }
+}
+
+/* ------------------------------------------------------------------ *
+ * הפיקניק
+ * ------------------------------------------------------------------ */
+
+.walk-scene.is-picnic .walk-ground,
+.walk-scene.is-picnic .walk-hills { animation-play-state: paused; }
+
+.picnic {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 6%;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    animation: pop-in 0.5s ease both;
+}
+
+.blanket {
+    width: min(78%, 300px);
+    height: clamp(74px, 15vh, 104px);
+    border-radius: 14px;
+    background:
+        repeating-conic-gradient(#ff8fa8 0 25%, #fff0f3 0 50%) 0 0 / 26px 26px;
+    box-shadow: 0 6px 14px rgba(31, 42, 82, 0.22);
+    transform: perspective(300px) rotateX(46deg);
+}
+
+.basket {
+    position: absolute;
+    inset-inline-end: 14%;
+    bottom: 34%;
+    font-size: clamp(30px, 8vw, 42px);
+    animation: pop-in 0.5s ease 0.15s both;
+}
+
+.picnic-food {
+    position: absolute;
+    bottom: 26%;
+    display: flex;
+    gap: clamp(4px, 2vw, 12px);
+}
+
+.picnic-food span {
+    font-size: clamp(20px, 5.5vw, 28px);
+    animation: pop-in 0.4s ease both;
+}
+
+.walkers.is-sitting {
+    inset-inline-start: 50%;
+    transform: translateX(50%);
+    bottom: 20%;
+    z-index: 2;
+}
+
+.walkers.is-sitting .walker svg { animation: bob 2.6s ease-in-out infinite; }
+
+/* ------------------------------------------------------------------ *
+ * מי משחק
+ * ------------------------------------------------------------------ */
+
+.screen-who.is-on {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100vh - 60px);
+    text-align: center;
+}
+
+.who-title {
+    margin: 0 0 22px;
+    font-size: clamp(30px, 8vw, 46px);
+    font-weight: 900;
+    color: #6d3fbf;
+    text-shadow: 0 3px 0 #fff, 0 6px 0 rgba(31, 42, 82, 0.18);
+}
+
+.who-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 14px;
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+.who-card {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    padding: 14px 8px 16px;
+    font: inherit;
+    background: var(--card);
+    border: none;
+    border-radius: var(--radius);
+    box-shadow: 0 10px 0 rgba(31, 42, 82, 0.14), var(--shadow-soft);
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.who-card:active { transform: translateY(8px); box-shadow: 0 2px 0 rgba(31, 42, 82, 0.14); }
+.who-card.is-active { outline: 5px solid var(--mint); outline-offset: -5px; }
+
+.who-card svg { width: 100%; max-width: 104px; height: auto; }
+
+.who-name {
+    font-size: clamp(18px, 5vw, 22px);
+    font-weight: 900;
+}
+
+.who-count {
+    font-size: clamp(14px, 3.8vw, 17px);
+    font-weight: 700;
+    color: var(--ink-soft);
+}
+
+.who-add {
+    align-content: center;
+    min-height: 168px;
+    background: rgba(255, 255, 255, 0.62);
+    border: 4px dashed rgba(31, 42, 82, 0.2);
+}
+
+.who-plus {
+    font-size: 54px;
+    line-height: 1;
+    color: var(--ink-soft);
+}
+
+.who-note {
+    margin: 22px auto 0;
+    max-width: 34ch;
+    font-size: clamp(15px, 4vw, 18px);
+    font-weight: 700;
+    color: var(--ink-soft);
+}
+
+/* ------------------------------------------------------------------ *
+ * החדר
+ * ------------------------------------------------------------------ */
+
+.room-btn {
+    background: linear-gradient(180deg, #c3a6ff, #a97bff);
+    box-shadow: 0 10px 0 #7b4fd6, var(--shadow-soft);
+    margin-bottom: 12px;
+}
+
+.room-btn:active { box-shadow: 0 2px 0 #7b4fd6; }
+
+.dice-btn {
+    background: linear-gradient(180deg, #9fd8ff, #5fb8f5);
+    box-shadow: 0 10px 0 #3a8fc9, var(--shadow-soft);
+    margin-bottom: 18px;
+}
+
+.dice-btn:active { box-shadow: 0 2px 0 #3a8fc9; }
+
+.room {
+    position: relative;
+    padding: 84px 14px 0;
+    background: linear-gradient(180deg, #ffeed4 0%, #ffe3bd 68%, #cf9f70 68%, #bf8f60 100%);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+}
+
+.room-window {
+    position: absolute;
+    inset-inline-end: 20px;
+    top: 12px;
+    width: 82px;
+    height: 62px;
+    background: linear-gradient(180deg, #9fe0ff, #d8f4ff);
+    border: 6px solid #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 0 rgba(31, 42, 82, 0.12);
+}
+
+.room-shelf {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    max-width: 430px;
+    margin: 0 auto;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.55);
+    border-radius: 18px;
+}
+
+.shelf-slot {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    font-size: clamp(26px, 7vw, 36px);
+    line-height: 1;
+    background: rgba(255, 255, 255, 0.7);
+    border: 3px dashed rgba(31, 42, 82, 0.16);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: transform 0.12s ease;
+}
+
+.shelf-slot.is-full {
+    background: #fff;
+    border-style: solid;
+    border-color: rgba(31, 42, 82, 0.1);
+}
+
+/* קרש עץ מתחת לכל שורה */
+.shelf-slot {
+    box-shadow: 0 6px 0 #b98a55;
+}
+
+.shelf-slot:active { transform: translateY(3px); }
+
+.room-floor {
+    position: relative;
+    height: 132px;
+    margin: 22px -14px 0;
+    display: grid;
+    place-items: end center;
+}
+
+.room-rug {
+    position: absolute;
+    bottom: 8px;
+    width: 66%;
+    height: 20px;
+    background: repeating-linear-gradient(90deg, #ff8fc4 0 18px, #ffb3d6 18px 36px);
+    border-radius: 40px;
+    opacity: 0.85;
+}
+
+.room-hero {
+    position: relative;
+    z-index: 1;          /* עומד על השטיח, לא מתחתיו */
+    margin-bottom: 8px;
+}
+
+.room-hero svg {
+    width: clamp(86px, 23vw, 116px);
+    height: auto;
+    display: block;
+    animation: bob 3s ease-in-out infinite;
+}
+
+.doll-ico { width: 100%; max-width: 46px; height: auto; display: block; }
+
+.tray {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.tray-item {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-width: 66px;
+    min-height: 66px;
+    padding: 8px;
+    font: inherit;
+    font-size: clamp(26px, 7vw, 34px);
+    line-height: 1;
+    background: var(--card);
+    border: none;
+    border-radius: 18px;
+    box-shadow: 0 7px 0 rgba(31, 42, 82, 0.14);
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.tray-item:active { transform: translateY(5px); box-shadow: 0 2px 0 rgba(31, 42, 82, 0.14); }
+
+.tray-item b {
+    position: absolute;
+    inset-block-end: 2px;
+    inset-inline-end: 6px;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--ink-soft);
+}
+
+/* ------------------------------------------------------------------ *
+ * אלבום מקובץ לפי אזור
+ * ------------------------------------------------------------------ */
+
+.album-grid { display: block; }
+
+.album-group {
+    margin: 20px 0 10px;
+    font-size: clamp(17px, 4.6vw, 21px);
+    font-weight: 900;
+    text-shadow: 0 2px 0 rgba(255, 255, 255, 0.75);
+}
+
+.album-group:first-child { margin-top: 0; }
+
+.album-group b {
+    font-size: clamp(14px, 3.8vw, 17px);
+    font-weight: 800;
+    color: var(--ink-soft);
+}
+
+.album-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 10px;
+}

@@ -147,7 +147,7 @@ five- or six-year-old. Open it directly:
 open game.html      # or: python3 -m http.server 8000  →  localhost:8000/game.html
 ```
 
-Twenty-one original creatures live across seven areas. Meeting one means solving a single tiny
+Twenty-four original creatures — twenty-one across seven areas, and three rare ones that live nowhere. Meeting one means solving a single tiny
 puzzle and then throwing a friendship star. The rules that matter are the ones about being five:
 
 - **Nothing can be lost.** A wrong tap is answered with "almost, try again", never with a failure.
@@ -165,7 +165,18 @@ Each area brings its own puzzles, and the new ones ask for a bit more than the l
 | ☁️ ענני הסוכר | **addition** — two groups, sums to 10 |
 | 🤖 עיר הרובוטים | **memory** (what vanished) and **first letters** of Hebrew words |
 
-Areas unlock as friends are collected, and the album keeps its silhouettes until you meet each one.
+Areas unlock as friends are collected, and the album — grouped by area, with a count per group —
+keeps its silhouettes until you meet each one.
+
+### Who's playing
+
+Up to three players share the device, each with their own island: collection, character, shells,
+purchases, room, and difficulty level. A picker on startup shows each player's character and how
+many friends they've found; 👥 on the title screen switches between them. A save from before
+profiles existed becomes player one.
+
+Difficulty is per player, so an older sibling racing ahead doesn't hand the younger one level-3
+puzzles.
 
 ### Who you are
 
@@ -184,6 +195,50 @@ can be missed or lost, and you can turn back at any moment.
 
 Walking together cheers the friend up, so it's the third way to look after them.
 
+### Shells, and what to spend them on
+
+Shells (🐚) are the island's money. They turn up on walks more often than the other keepsakes, and
+arriving at the picnic pays two more, so no walk comes back empty-handed — about six a trip.
+
+צִדְפּוֹנִי's shop sells eight accessories for your friends — crown, cap, ribbon, flower, glasses,
+scarf, bow tie, balloon — priced 3 to 8 shells, plus three extra hairstyles for your own character
+that stay locked in the builder until bought. Each accessory is drawn onto the creature itself and
+occupies one slot (head, face, neck, hand), so a friend can wear a crown, glasses and a scarf at
+once. Tap an item on their care screen to put it on, tap again to take it off; whatever they're
+wearing follows them into the album, onto walks, and into every puzzle.
+
+There are four **dolls** too — teddy, bunny, a little chavrez, a star — sold on their own shelf. A
+doll is just an accessory that happens to be a plush, so a friend carries theirs everywhere.
+
+Nothing here can go wrong either: prices are checked before a purchase, there's no debt, everything
+bought is kept forever, and being short is answered with how many more shells to find rather than a
+refusal.
+
+### The picnic, and what might turn up on the way
+
+Arriving lays an actual picnic: a checked blanket, a basket, food, and the two of you sitting down
+to eat together — the friend you brought is fed, not just cheered.
+
+And on any given walk there's a **10% chance** of meeting one of three creatures that live in no area
+at all — זְהַבְהָב, קַשְׁתּוֹנִי, לַיְלוֹנִי. They drift past glowing, and befriending one takes **two puzzles
+instead of one**, drawn from every type in the game. Their album cards say only that they might turn
+up on a walk. Once all three are found, no more sightings occur.
+
+### A room of your own
+
+Everything found on a walk that isn't a shell used to become a number on the map and nothing more.
+🏡 **הַחֶדֶר שֶׁלִּי** gives it somewhere to go: an eight-slot shelf where treasures and the dolls you
+bought get displayed, with your character standing on the rug below. Tap something in the tray to
+put it on the shelf, tap it on the shelf to take it back. No dragging — a five-year-old shouldn't
+have to fight the interface. Shells stay out of it; money isn't an ornament.
+
+### When an area is finished
+
+Once every friend in an area is found, going back pays **2–3 shells** for a solved puzzle instead of
+handing over a duplicate. All seven places stay worth visiting, and there's a second way to earn
+besides walking. 🎲 **הַפְתִּיעוּ אוֹתִי** picks an unlocked area at random for when choosing is the
+hard part.
+
 ### Looking after them
 
 Every friend you catch has three needs — fed, happy, rested — that drift down slowly over real
@@ -195,7 +250,8 @@ The Tamagotchi guilt loop is deliberately absent. A need never falls below 1, a 
 more than a day away does, nothing ever gets sick or dies, and the worst thing a creature will say
 is that it's a little hungry. The album nudges only when someone is genuinely low.
 
-Progress — friends, their needs, your character and your bag — is saved in `localStorage`; the 🔊,
+Progress — friends, their needs, your character, your bag and everything you've bought — is saved
+in `localStorage`; the 🔊,
 🗣️ and ↺ buttons on the title screen toggle sound, speech, and start over. No build step and no dependencies — `game.html`, `game.css`, `game.js`,
 plus one webfont that falls back cleanly when offline.
 
