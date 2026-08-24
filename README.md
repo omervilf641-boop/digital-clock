@@ -250,10 +250,22 @@ The Tamagotchi guilt loop is deliberately absent. A need never falls below 1, a 
 more than a day away does, nothing ever gets sick or dies, and the worst thing a creature will say
 is that it's a little hungry. The album nudges only when someone is genuinely low.
 
+### Installing it
+
+The game is a Progressive Web App: served over HTTPS it offers "add to home screen", then opens
+full-screen with its own icon and **works with no connection at all**. `manifest.webmanifest`
+declares it, `sw.js` caches the seven files that make it up, and the registration is guarded so
+opening `game.html` straight off disk still works — it just doesn't install.
+
+Nothing is fetched from another host. The rounded face is embedded in the stylesheet as two woff2
+subsets (Hebrew and Latin, ~30KB together) rather than pulled from Google Fonts, so there is exactly
+zero network traffic once the page is open. For a game aimed at five-year-olds that seemed worth the
+30KB.
+
 Progress — friends, their needs, your character, your bag and everything you've bought — is saved
 in `localStorage`; the 🔊,
 🗣️ and ↺ buttons on the title screen toggle sound, speech, and start over. No build step and no dependencies — `game.html`, `game.css`, `game.js`,
-plus one webfont that falls back cleanly when offline.
+with the webfont embedded.
 
 ## License
 
