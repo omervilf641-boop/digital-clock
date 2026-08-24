@@ -832,6 +832,51 @@
     }
 
     /* ============================================================== *
+     * התקנה למסך הבית
+     *
+     * כרום מציע התקנה לפי שיקולים משלו, ולפעמים פשוט לא מציע. אז אנחנו
+     * תופסים את האירוע ומציגים כפתור משלנו במסך הפתיחה — בעברית, בגודל
+     * שילד רואה. כשאין אירוע (המשחק כבר מותקן, או דפדפן שלא תומך)
+     * הכפתור פשוט לא מופיע ושום דבר אחר לא משתנה.
+     * ============================================================== */
+
+    var installPrompt = null;
+
+    function installed() {
+        return window.matchMedia('(display-mode: standalone)').matches ||
+               window.navigator.standalone === true;
+    }
+
+    function showInstall(on) {
+        var btn = $('installBtn');
+        if (btn) btn.hidden = !on;
+    }
+
+    function watchInstall() {
+        window.addEventListener('beforeinstallprompt', function (event) {
+            event.preventDefault();      /* לא נותנים לכרום להחליט מתי */
+            installPrompt = event;
+            if (!installed()) showInstall(true);
+        });
+
+        window.addEventListener('appinstalled', function () {
+            installPrompt = null;
+            showInstall(false);
+            say('המשחק הותקן! אפשר לפתוח אותו מהמסך הראשי');
+        });
+
+        $('installBtn').addEventListener('click', function () {
+            if (!installPrompt) return;
+            sfx.tap();
+            installPrompt.prompt();
+            installPrompt.userChoice.then(function () {
+                installPrompt = null;
+                showInstall(false);
+            });
+        });
+    }
+
+    /* ============================================================== *
      * מי משחק
      *
      * עד שלושה שחקנים על אותו מכשיר. לכל אחד אוסף, כסף, קניות, חדר
@@ -2415,6 +2460,7 @@
 
     function init() {
         load();
+        watchInstall();
 
         $('playBtn').addEventListener('click', function () {
             sfx.page();

@@ -6,13 +6,13 @@
  * את כל המטמון — אין קבצים ישנים שנשארים מאחור.
  * ------------------------------------------------------------------ */
 
-var CACHE = 'chavrezim-v1';
+var CACHE = 'chavrezim-v2';
 
 var SHELL = [
     './game.html',
     './game.css',
     './game.js',
-    './manifest.webmanifest',
+    './manifest.json',
     './icons/icon-192.png',
     './icons/icon-512.png',
     './icons/icon-maskable-512.png'
