@@ -1498,3 +1498,12 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
     gap: 10px;
 }
+
+/* כפתור ההתקנה — מופיע רק כשהדפדפן באמת מוכן להתקין */
+.install-btn {
+    background: linear-gradient(180deg, #7be3b6, var(--mint));
+    box-shadow: 0 10px 0 #33ab86, var(--shadow-soft);
+}
+
+.install-btn:active { box-shadow: 0 2px 0 #33ab86; }
+.install-btn[hidden] { display: none; }
