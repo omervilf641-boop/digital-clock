@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>עיר החברזים</title>
+    <meta name="description" content="עולם פתוח לגיל 5-6: מטיילים ברחוב, פוגשים חברזים ונכנסים לבניינים — המאפייה, החנות, הבית והנמל לאי.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='6' y='13' width='20' height='16' fill='%23ffd9a0'/%3E%3Cpath d='M3 14 L16 4 L29 14 Z' fill='%23ff8fb8'/%3E%3Crect x='13' y='20' width='6' height='9' fill='%23a26a3e'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="world.css">
+    <meta name="theme-color" content="#8fd8ff">
+</head>
+<body>
+
+<header class="hud">
+    <span class="who" id="who"></span>
+    <span class="place" id="place"></span>
+    <span class="hud-tools">
+        <button class="tool" id="soundBtn" type="button" aria-pressed="true" title="צלילים">🔊</button>
+    </span>
+</header>
+
+<main class="viewport" id="viewport" aria-label="העיר">
+    <div class="sky" aria-hidden="true">
+        <div class="sun"></div>
+        <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div><div class="cloud c4"></div>
+    </div>
+    <div class="hills" id="hills" aria-hidden="true"></div>
+    <div class="world" id="world"></div>
+</main>
+
+<nav class="pad" aria-label="הליכה">
+    <button class="arrow" id="goLeft" type="button" aria-label="ללכת שמאלה">◀</button>
+    <p class="hint" id="hint">לַחֲצוּ אֵיפֹה לָלֶכֶת 👆</p>
+    <button class="arrow" id="goRight" type="button" aria-label="ללכת ימינה">▶</button>
+</nav>
+
+<div class="fx" id="fx" aria-hidden="true"></div>
+<div class="curtain" id="curtain" aria-hidden="true"></div>
+
+<script src="world.js"></script>
+</body>
+</html>

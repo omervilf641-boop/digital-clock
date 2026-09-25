@@ -267,6 +267,26 @@ in `localStorage`; the 🔊,
 🗣️ and ↺ buttons on the title screen toggle sound, speech, and start over. No build step and no dependencies — `game.html`, `game.css`, `game.js`,
 with the webfont embedded.
 
+## עיר החברזים (`world.html`) — where everything connects
+
+An open town to walk around in, and the front door to both games. The character from the island
+walks along one long street wherever you tap (or while an arrow is held), and the friends that
+player has caught wander the pavement too; tap one and it jumps and says hello by name.
+
+The buildings are doors: **הַבַּיִת שֶׁלִּי** opens your room, **הַמַּאֲפִיָּה** the bakery,
+**הַחֲנוּת שֶׁל צִדְפּוֹנִי** the shop, **בֵּית הַחֲבֵרִים** the album, and the boat at **הַנָּמָל** sails
+to the island map. Walk up to a door and it swings open, your character steps inside, and the
+game opens on that exact screen (`game.html#shop`, `#room`, `#album`, `#map`) rather than on its
+title. The town remembers where you were standing when you come back.
+
+Between the buildings is the part that makes it a place and not a menu: a fountain that splashes,
+a swing that goes higher when tapped, a slide a nearby friend goes down, flowers that spin, a
+chimney that smokes, birds, drifting clouds, and a construction site with a crane and a
+**בְּקָרוֹב** sign — the spot for whatever gets built next.
+
+The town keeps no state of its own beyond your position on the street. The character, the friends
+and the sound setting are all read from the island's save, so whatever happens there shows up here.
+
 ## Also here: המאפייה של החברזים (`bakery.html`)
 
 A second game for the same child, set in the same world. A chavrez walks into the bakery and orders

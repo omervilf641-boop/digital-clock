@@ -2553,6 +2553,15 @@
             window.speechSynthesis.onvoiceschanged = function () { /* מרענן את הרשימה */ };
         }
 
+        /* הגעה מהעיר עם יעד (#shop, #room, #album, #map): השחקן כבר נבחר
+           בעיר, אז נכנסים ישר לבניין שנלחץ ולא עוברים דרך "מי משחק" */
+        var from = (location.hash || '').slice(1);
+        var DOORS = { shop: 'shop', room: 'room', album: 'album', map: 'map' };
+        if (DOORS[from] && state && state.hero) {
+            show(DOORS[from]);
+            return;
+        }
+
         /* מי שכבר יש לו דמות רואה קודם את בחירת השחקן; מי שלא — בונה אחת */
         if (players.some(function (p) { return p.hero; })) {
             show('who');
