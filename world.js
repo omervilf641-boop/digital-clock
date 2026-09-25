@@ -283,6 +283,82 @@
                 '<path d="M200 320 l12 -40 l12 40 z" fill="#ff7a59"/><rect x="202" y="298" width="20" height="5" fill="#fff"/>' +
                 '</svg>';
         },
+        clinic: function () {
+            return '<svg viewBox="0 0 240 290">' +
+                '<rect x="16" y="70" width="208" height="220" fill="#fff"/>' +
+                '<rect x="8" y="56" width="224" height="22" rx="8" fill="#4ea9ff"/>' +
+                '<g class="beacon"><rect x="104" y="12" width="32" height="40" rx="6" fill="#ff5f7e"/><rect x="114" y="18" width="12" height="28" fill="#fff"/><rect x="106" y="26" width="28" height="12" fill="#fff"/></g>' +
+                '<rect class="win" x="30" y="110" width="56" height="50" rx="8" fill="#d9f1ff" stroke="#4ea9ff" stroke-width="5"/>' +
+                '<rect class="win" x="154" y="110" width="56" height="50" rx="8" fill="#d9f1ff" stroke="#4ea9ff" stroke-width="5"/>' +
+                '<text x="44" y="146" font-size="24">🩹</text><text x="168" y="146" font-size="24">🧸</text>' +
+                door(92, 190, 56, 100, '#4ea9ff') +
+                '</svg>';
+        },
+        salon: function () {
+            return '<svg viewBox="0 0 240 290">' +
+                '<rect x="16" y="60" width="208" height="230" fill="#ffe6f6"/>' +
+                '<path d="M6 66 q58 -46 114 -46 q56 0 114 46 z" fill="#e27bd0"/>' +
+                '<rect x="24" y="100" width="18" height="120" rx="9" fill="#fff" stroke="#e27bd0" stroke-width="3"/>' +
+                '<g class="pole-stripes"><path d="M24 110 l18 -14 v12 l-18 14 z M24 140 l18 -14 v12 l-18 14 z M24 170 l18 -14 v12 l-18 14 z M24 200 l18 -14 v12 l-18 14 z" fill="#ff5f7e"/></g>' +
+                '<ellipse class="win" cx="100" cy="150" rx="40" ry="46" fill="#e8f6ff" stroke="#f5c36b" stroke-width="7"/>' +
+                '<text x="80" y="162" font-size="34">💇</text>' +
+                door(148, 180, 56, 110, '#e27bd0') +
+                '</svg>';
+        },
+        garden: function () {
+            var pickets = '';
+            for (var i = 0; i < 12; i++) pickets += '<path d="M' + (8 + i * 24) + ' 290 v-60 l8 -10 l8 10 v60 z" fill="#fff" stroke="#e0d6c8" stroke-width="2"/>';
+            return '<svg viewBox="0 0 300 290">' +
+                '<rect x="0" y="244" width="300" height="12" fill="#fff"/>' +
+                '<g class="sunflower"><path d="M60 250 v-120" stroke="#4fae52" stroke-width="6"/><circle cx="60" cy="120" r="24" fill="#ffd84a"/><circle cx="60" cy="120" r="11" fill="#9c6b45"/></g>' +
+                '<g class="sunflower" style="animation-delay:-1s"><path d="M240 250 v-100" stroke="#4fae52" stroke-width="6"/><circle cx="240" cy="140" r="22" fill="#ffd84a"/><circle cx="240" cy="140" r="10" fill="#9c6b45"/></g>' +
+                '<text x="90" y="236" font-size="30">🌷🍓🌼🍄</text>' +
+                pickets +
+                '<path d="M118 240 q32 -60 64 0" stroke="#4fae52" stroke-width="10" fill="none"/>' +
+                '<rect class="door" x="126" y="232" width="48" height="58" fill="#c98b5a"/>' +
+                '</svg>';
+        },
+        music: function () {
+            return '<svg viewBox="0 0 260 300">' +
+                '<rect x="18" y="80" width="224" height="220" fill="#45307a"/>' +
+                '<path d="M8 86 q122 -84 244 0 z" fill="#a97bff"/>' +
+                '<g class="notes"><text x="40" y="60" font-size="26">🎵</text><text x="190" y="46" font-size="26">🎶</text></g>' +
+                '<rect class="win" x="34" y="110" width="192" height="56" rx="10" fill="#2d2150" stroke="#ffd84a" stroke-width="5"/>' +
+                '<text x="54" y="150" font-size="28">🥁🎹🎺🎸</text>' +
+                '<path d="M80 190 h100 v110 h-100 z" fill="#d4335a"/>' +
+                door(104, 196, 52, 104, '#ffd84a') +
+                '</svg>';
+        },
+        icecream: function () {
+            var s = '';
+            for (var i = 0; i < 8; i++) s += '<rect x="' + (6 + i * 29) + '" y="84" width="15" height="34" fill="#ffa94d"/>';
+            return '<svg viewBox="0 0 240 300">' +
+                '<g class="big-cone"><path d="M100 70 L140 70 L120 10 Z" fill="#e9a55b" transform="rotate(180 120 40)"/>' +
+                '<circle cx="110" cy="22" r="18" fill="#ffb3c7"/><circle cx="130" cy="22" r="18" fill="#9ff0c8"/><circle cx="120" cy="6" r="16" fill="#fff3c4"/></g>' +
+                '<rect x="16" y="84" width="208" height="216" fill="#fff8e6"/>' +
+                '<rect x="6" y="84" width="228" height="34" fill="#fff"/>' + s +
+                '<rect class="win" x="28" y="140" width="100" height="80" rx="10" fill="#fff" stroke="#ffa94d" stroke-width="5"/>' +
+                '<text x="40" y="192" font-size="30">🍦🍨</text>' +
+                door(148, 190, 56, 110, '#ffa94d') +
+                '</svg>';
+        },
+        studio: function () {
+            var latest = '';
+            try {
+                var st = JSON.parse(localStorage.getItem('studio.v1') || 'null');
+                if (st && st.gallery && st.gallery[0]) latest = st.gallery[0];
+            } catch (e) { /* בלי ציור */ }
+            /* הציור האחרון שנתלה בסטודיו מופיע בחלון */
+            var win = latest && window.Kit && window.Kit.PAGES[latest.page] ? window.Kit.pageSVG(latest.page, latest.fills) : '<text x="44" y="176" font-size="40">🖼️</text>';
+            return '<svg viewBox="0 0 260 300">' +
+                '<rect x="16" y="70" width="228" height="230" fill="#fffdf6"/>' +
+                '<path d="M6 76 L130 20 L254 76 Z" fill="#6fbf4f"/>' +
+                '<circle cx="60" cy="100" r="10" fill="#ff5f5f"/><circle cx="84" cy="96" r="8" fill="#ffd84a"/><circle cx="104" cy="104" r="9" fill="#4ea9ff"/>' +
+                '<rect class="win" x="30" y="124" width="110" height="96" rx="6" fill="#fff" stroke="#c98b5a" stroke-width="7"/>' +
+                '<svg x="36" y="130" width="98" height="84" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">' + win + '</svg>' +
+                door(162, 190, 58, 110, '#6fbf4f') +
+                '</svg>';
+        },
         tree: function () {
             return '<svg viewBox="0 0 120 200"><rect x="52" y="110" width="16" height="90" rx="6" fill="#a26a3e"/>' +
                 '<circle cx="60" cy="70" r="50" fill="#6fbf4f"/><circle cx="34" cy="92" r="30" fill="#7cc25c"/><circle cx="88" cy="90" r="32" fill="#7cc25c"/>' +
@@ -353,15 +429,23 @@
         { kind: 'slide',    x: 2080, w: 170, act: 'slide',  nik: 'גַּן הַשַּׁעֲשׁוּעִים', say: 'גן השעשועים' },
         { kind: 'flowers',  x: 2240, w: 90,  act: 'flower' },
         { kind: 'album',    x: 2440, w: 260, doorX: 130, nik: 'בֵּית הַחֲבֵרִים',      say: 'בית החברים',        go: 'game.html#album', emoji: '📔' },
-        { kind: 'tree',     x: 2660, w: 120 },
-        { kind: 'soon',     x: 2900, w: 260, act: 'soon',  nik: 'בִּנְיָן חָדָשׁ',       say: 'כאן ייבנה בניין חדש' },
-        { kind: 'lamp',     x: 3100, w: 50 },
-        { kind: 'dock',     x: 3260, w: 220, nik: 'הַנָּמָל', emoji: '⚓' },
-        { kind: 'boat',     x: 3420, w: 200, act: 'boat', doorX: 100, nik: 'הַנָּמָל — לָאִי', say: 'הנמל. מפליגים לאי החברזים', go: 'game.html#map', emoji: '⛵' }
+        { kind: 'clinic',   x: 2760, w: 240, doorX: 120, nik: 'מִרְפְּאַת הַחַבְרֵזִים', say: 'מרפאת החברזים',  go: 'places.html#clinic',   emoji: '🩺' },
+        { kind: 'salon',    x: 3040, w: 240, doorX: 176, nik: 'הַמִּסְפָּרָה',          say: 'המספרה',          go: 'places.html#salon',    emoji: '💇' },
+        { kind: 'tree',     x: 3240, w: 120 },
+        { kind: 'garden',   x: 3440, w: 300, doorX: 150, nik: 'הַגִּנָּה',             say: 'הגינה',           go: 'places.html#garden',   emoji: '🌱' },
+        { kind: 'music',    x: 3780, w: 260, doorX: 130, nik: 'אוּלַם הַמּוּזִיקָה',     say: 'אולם המוזיקה',    go: 'places.html#music',    emoji: '🎵' },
+        { kind: 'flowers',  x: 3970, w: 90,  act: 'flower' },
+        { kind: 'icecream', x: 4150, w: 240, doorX: 176, nik: 'הַגְּלִידָרִיָּה',        say: 'הגלידרייה',       go: 'places.html#icecream', emoji: '🍦' },
+        { kind: 'studio',   x: 4440, w: 260, doorX: 190, nik: 'סְטוּדְיוֹ הַצִּיּוּר',     say: 'סטודיו הציור',    go: 'places.html#studio',   emoji: '🎨' },
+        { kind: 'tree',     x: 4640, w: 120 },
+        { kind: 'soon',     x: 4860, w: 260, act: 'soon',  nik: 'בִּנְיָן חָדָשׁ',       say: 'כאן ייבנה בניין חדש' },
+        { kind: 'lamp',     x: 5060, w: 50 },
+        { kind: 'dock',     x: 5220, w: 220, nik: 'הַנָּמָל', emoji: '⚓' },
+        { kind: 'boat',     x: 5380, w: 200, act: 'boat', doorX: 100, nik: 'הַנָּמָל — לָאִי', say: 'הנמל. מפליגים לאי החברזים', go: 'game.html#map', emoji: '⛵' }
     ];
 
-    var WORLD_W = 3620;
-    var WATER_FROM = 3180;
+    var WORLD_W = 5580;
+    var WATER_FROM = 5140;
 
     /* ============================================================== *
      * בנייה

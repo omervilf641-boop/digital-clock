@@ -282,10 +282,30 @@ title. The town remembers where you were standing when you come back.
 Between the buildings is the part that makes it a place and not a menu: a fountain that splashes,
 a swing that goes higher when tapped, a slide a nearby friend goes down, flowers that spin, a
 chimney that smokes, birds, drifting clouds, and a construction site with a crane and a
-**בְּקָרוֹב** sign — the spot for whatever gets built next.
+**בְּקָרוֹב** sign — the spot for whatever gets built next. Six more buildings line the second half
+of the street; see below.
 
 The town keeps no state of its own beyond your position on the street. The character, the friends
 and the sound setting are all read from the island's save, so whatever happens there shows up here.
+
+### Six more buildings (`places.html`)
+
+The town's second half is six more doors, all in one page (`places.html#clinic`, `#salon`,
+`#garden`, `#music`, `#icecream`, `#studio`), each its own small module. They share `kit.js`:
+the character and creature drawing, sound and speech, the flying and sparkling effects, and safe
+reads and writes to the island's save.
+
+| Building | What you do | What it changes elsewhere |
+|---|---|---|
+| 🩺 מרפאת החברזים | A friend arrives with a fever, a scratch or a cough; pick the right tools in order — thermometer then a cold compress, wash then a plaster, listen to the heart then syrup — and they get better | A caught friend who's treated leaves happy and rested on the island too |
+| 💇 המספרה | Cut and dye your own character's hair (scissors orbit, clippings fall), plus foam and a hair-dryer just for fun | The new look is saved to your character everywhere; shop-only styles stay locked until bought |
+| 🌱 הגינה | Plant strawberries, sunflowers, mushrooms or a chestnut tree, water them, and come back — they grow in real time: the first sprout in under a minute, ripe after a few hours | A harvest puts two of that treasure and a shell into your bag, ready for the room's shelf |
+| 🎵 אולם המוזיקה | Four friends each play an instrument; tap to play, "repeat after me" builds from two notes to six, and a show turns on the disco lights | — |
+| 🍦 הגלידרייה | Build the cone a customer draws for you, scoop by scoop in order, then add the topping | Each cone served pays a shell |
+| 🎨 סטודיו הציור | Three colouring pages, ten paints, a surprise-me button, and a wall to hang finished pictures on | The latest picture hangs in the studio's window on the street |
+
+Same rules as everywhere else: nothing can be lost, wrong picks get a gentle word and then a
+pulsing hint, and every instruction is spoken.
 
 ## Also here: המאפייה של החברזים (`bakery.html`)
 
