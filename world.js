@@ -283,6 +283,14 @@
                 '<path d="M200 320 l12 -40 l12 40 z" fill="#ff7a59"/><rect x="202" y="298" width="20" height="5" fill="#fff"/>' +
                 '</svg>';
         },
+        busstop: function () {
+            return '<svg viewBox="0 0 70 200">' +
+                '<rect x="8" y="30" width="6" height="170" fill="#3e2c4a"/>' +
+                '<rect x="0" y="22" width="44" height="38" rx="8" fill="#ffd84a" stroke="#3e2c4a" stroke-width="4"/>' +
+                '<text x="6" y="52" font-size="26">🚌</text>' +
+                '<rect x="18" y="160" width="50" height="8" rx="3" fill="#a26a3e"/><rect x="22" y="168" width="5" height="32" fill="#7d4f2c"/><rect x="58" y="168" width="5" height="32" fill="#7d4f2c"/>' +
+                '</svg>';
+        },
         clinic: function () {
             return '<svg viewBox="0 0 240 290">' +
                 '<rect x="16" y="70" width="208" height="220" fill="#fff"/>' +
@@ -419,7 +427,7 @@
         { kind: 'tree',     x: 70,   w: 120 },
         { kind: 'home',     x: 300,  w: 260, doorX: 130, nik: 'הַבַּיִת שֶׁלִּי',        say: 'הבית שלי',          go: 'game.html#room',  emoji: '🏡' },
         { kind: 'flowers',  x: 490,  w: 90,  act: 'flower' },
-        { kind: 'lamp',     x: 580,  w: 50 },
+        { kind: 'busstop',  x: 600,  w: 70,  act: 'bus', nik: 'תַּחֲנַת הָאוֹטוֹבּוּס', say: 'תחנת האוטובוס', emoji: '🚏' },
         { kind: 'fountain', x: 760,  w: 180, act: 'fountain', nik: 'הַמִּזְרָקָה',   say: 'המזרקה' },
         { kind: 'bakery',   x: 1060, w: 280, doorX: 212, nik: 'הַמַּאֲפִיָּה',       say: 'המאפייה',           go: 'bakery.html',     emoji: '🧁' },
         { kind: 'tree',     x: 1290, w: 120 },
@@ -429,6 +437,7 @@
         { kind: 'slide',    x: 2080, w: 170, act: 'slide',  nik: 'גַּן הַשַּׁעֲשׁוּעִים', say: 'גן השעשועים' },
         { kind: 'flowers',  x: 2240, w: 90,  act: 'flower' },
         { kind: 'album',    x: 2440, w: 260, doorX: 130, nik: 'בֵּית הַחֲבֵרִים',      say: 'בית החברים',        go: 'game.html#album', emoji: '📔' },
+        { kind: 'busstop',  x: 2605, w: 70,  act: 'bus', nik: 'תַּחֲנַת הָאוֹטוֹבּוּס', say: 'תחנת האוטובוס', emoji: '🚏' },
         { kind: 'clinic',   x: 2760, w: 240, doorX: 120, nik: 'מִרְפְּאַת הַחַבְרֵזִים', say: 'מרפאת החברזים',  go: 'places.html#clinic',   emoji: '🩺' },
         { kind: 'salon',    x: 3040, w: 240, doorX: 176, nik: 'הַמִּסְפָּרָה',          say: 'המספרה',          go: 'places.html#salon',    emoji: '💇' },
         { kind: 'tree',     x: 3240, w: 120 },
@@ -596,6 +605,7 @@
         updatePlace();
 
         npcs.forEach(function (n) {
+            if (tod === 'night') { n.el.classList.remove('is-walking'); n.el.style.left = n.x + 'px'; return; }   /* ישנים */
             if (n.wait > 0) { n.wait -= dt; n.el.classList.remove('is-walking'); }
             else {
                 var d = n.target - n.x;
@@ -680,7 +690,9 @@
         void n.el.offsetWidth;
         n.el.classList.add('is-jump');
         n.wait = 2;
-        var line = pick(['שָׁלוֹם ', 'הַיי ', 'אֵיזֶה כֵּיף לִרְאוֹת אוֹתְךָ, ']) + plain(hero.name) + '!';
+        var line = tod === 'night'
+            ? 'אָאָאָה... לַיְלָה טוֹב, ' + plain(hero.name) + ' 😴'
+            : pick(['שָׁלוֹם ', 'הַיי ', 'אֵיזֶה כֵּיף לִרְאוֹת אוֹתְךָ, ']) + plain(hero.name) + '!';
         bubble(n.el, n.c.nik + ': ' + line);
         say(n.c.name + ': ' + line);
         setTimeout(function () { n.el.classList.remove('is-jump'); }, 1300);
@@ -722,6 +734,9 @@
                 void p.el.offsetWidth;
                 p.el.classList.add('is-spin');
                 drops(p.el, 10, function () { return pick(['#ff8fb8', '#ffe066', '#fff']); });
+                break;
+            case 'bus':
+                openBusMap();
                 break;
             case 'soon':
                 sfx.pop();
@@ -796,6 +811,197 @@
     }
 
     /* ============================================================== *
+     * האוטובוס
+     *
+     * הרחוב ארוך מדי לרגליים של ילדה בת חמש. תחנה (או 🚌 למעלה) פותחת
+     * מפה קטנה; בוחרים לאן, האוטובוס מגיע, הדמות עולה, והמצלמה נוסעת
+     * איתו לאורך הרחוב עד הדלת.
+     * ============================================================== */
+
+    function busSVG() {
+        return '<svg viewBox="0 0 220 120" aria-hidden="true">' +
+            '<rect x="6" y="14" width="206" height="80" rx="18" fill="#ffd84a" stroke="#d9a41c" stroke-width="4"/>' +
+            '<rect x="6" y="66" width="206" height="10" fill="#ff8fb8"/>' +
+            '<rect x="22" y="26" width="36" height="30" rx="6" fill="#bfe9ff"/><rect x="66" y="26" width="36" height="30" rx="6" fill="#bfe9ff"/>' +
+            '<rect x="110" y="26" width="36" height="30" rx="6" fill="#bfe9ff"/><rect x="164" y="26" width="38" height="44" rx="6" fill="#d9f3ff"/>' +
+            '<circle cx="206" cy="80" r="6" fill="#fff6b0"/>' +
+            '<g class="wheel" style="transform-origin:54px 98px"><circle cx="54" cy="98" r="16" fill="#3e2c4a"/><circle cx="54" cy="98" r="6" fill="#ccc"/><rect x="52" y="84" width="4" height="28" fill="#777"/></g>' +
+            '<g class="wheel" style="transform-origin:170px 98px"><circle cx="170" cy="98" r="16" fill="#3e2c4a"/><circle cx="170" cy="98" r="6" fill="#ccc"/><rect x="168" y="84" width="4" height="28" fill="#777"/></g>' +
+            '</svg>';
+    }
+
+    function openBusMap() {
+        if (busy || $('busmap')) return;
+        sfx.pop();
+        var panel = document.createElement('div');
+        panel.className = 'busmap';
+        panel.id = 'busmap';
+        var stops = PLACES.filter(function (p) { return p.go || p.act === 'swing' || p.act === 'fountain'; });
+        panel.innerHTML = '<div class="busmap-card"><p class="busmap-title">🚌 לְאָן נוֹסְעִים?</p><div class="busmap-road" id="busRoad"></div>' +
+                          '<button class="busmap-close" type="button" aria-label="סגירה">✕</button></div>';
+        document.body.appendChild(panel);
+        var road = $('busRoad');
+        stops.forEach(function (p) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'busmap-stop';
+            var here = Math.abs(p.x * k - heroX) < 160 * k;
+            if (here) b.classList.add('is-here');
+            b.innerHTML = '<span class="ico">' + (p.emoji || (p.act === 'swing' ? '🛝' : '⛲')) + '</span><span>' + (p.act === 'swing' ? 'גַּן שַׁעֲשׁוּעִים' : p.nik) + '</span>';
+            b.addEventListener('click', function () { panel.remove(); ride(p); });
+            road.appendChild(b);
+        });
+        panel.querySelector('.busmap-close').addEventListener('click', function () { panel.remove(); });
+        panel.addEventListener('click', function (e) { if (e.target === panel) panel.remove(); });
+        say('לאן נוסעים?');
+    }
+
+    function tween(from, to, ms, ease, onStep) {
+        return new Promise(function (done) {
+            var t0 = performance.now();
+            (function step(now) {
+                var p = Math.min(1, (now - t0) / ms);
+                onStep(from + (to - from) * ease(p));
+                if (p < 1) requestAnimationFrame(step); else done();
+            })(t0);
+        });
+    }
+
+    var easeInOut = function (p) { return p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; };
+    var easeOut = function (p) { return 1 - Math.pow(1 - p, 3); };
+
+    async function ride(p) {
+        busy = true;
+        var dest = (p.doorX != null ? (p.x - p.w / 2 + p.doorX) : p.x) * k;
+        dest = Math.max(60 * k, Math.min((WATER_FROM + 30) * k, dest));
+        var vw = $('viewport').clientWidth;
+
+        var bus = document.createElement('div');
+        bus.className = 'bus is-driving';
+        bus.style.width = 220 * k + 'px';
+        bus.innerHTML = busSVG();
+        world.appendChild(bus);
+        var place = function (x) { bus.style.left = (x - 110 * k) + 'px'; };
+
+        /* מגיע מקצה המסך אל הדמות */
+        sfx.horn();
+        var from = heroX < dest ? cam - 240 * k : cam + vw + 240 * k;
+        bus.classList.toggle('is-flip', heroX > dest);
+        await tween(from, heroX, 900, easeOut, place);
+        bus.classList.remove('is-driving');
+        tone(1320, 0, .12, 'sine', .1); tone(1320, .18, .12, 'sine', .1);
+
+        /* עולים */
+        heroEl.classList.add('is-riding');
+        await new Promise(function (r) { setTimeout(r, 450); });
+
+        /* נוסעים — המצלמה עוקבת אחרי האוטובוס */
+        bus.classList.add('is-driving');
+        var dist = Math.abs(dest - heroX);
+        var ms = Math.max(1200, Math.min(3200, dist / (1.1 * k)));
+        var engine = setInterval(function () { tone(90 + Math.random() * 20, 0, .12, 'sawtooth', .02); }, 140);
+        await tween(heroX, dest, ms, easeInOut, function (x) { place(x); heroX = targetX = x; });
+        clearInterval(engine);
+        bus.classList.remove('is-driving');
+
+        /* יורדים ליד הדלת */
+        tone(1320, 0, .12, 'sine', .1); tone(1320, .18, .12, 'sine', .1);
+        heroEl.classList.remove('is-riding');
+        say('הגענו! ' + (p.say || ''));
+        try { localStorage.setItem('world.x', String(heroX / k)); } catch (e) { /* לא נורא */ }
+        await new Promise(function (r) { setTimeout(r, 500); });
+
+        /* האוטובוס ממשיך בדרכו */
+        bus.classList.add('is-driving');
+        var away = heroX + (bus.classList.contains('is-flip') ? -1 : 1) * (vw + 300 * k);
+        tween(heroX, away, 1100, function (p) { return p * p; }, place).then(function () { bus.remove(); });
+        busy = false;
+    }
+
+    /* ============================================================== *
+     * יום ולילה — לפי השעון האמיתי
+     *
+     * ערב מחשיך את העיר ומדליק פנסים; בלילה החברים ישנים, ואם ההורים
+     * לא כיבו את זה בפינת ההורים — חבר מציע בעדינות ללכת לישון.
+     * ?time=day|evening|night עוקף את השעון (לבדיקות ולהדגמה).
+     * ============================================================== */
+
+    function parentPrefs() {
+        try { return JSON.parse(localStorage.getItem('parent.v1') || 'null') || {}; } catch (e) { return {}; }
+    }
+
+    function timeOfDay() {
+        var forced = (location.search.match(/[?&]time=(day|evening|night)/) || [])[1];
+        if (forced) return forced;
+        var d = new Date(), h = d.getHours() + d.getMinutes() / 60;
+        if (h >= 19.5 || h < 6) return 'night';
+        if (h >= 17) return 'evening';
+        return 'day';
+    }
+
+    var tod = null, nudged = false;
+
+    function applyTime() {
+        var now = timeOfDay();
+        if (now === tod) return;
+        tod = now;
+        document.body.dataset.time = now;
+        npcs.forEach(function (n) { n.el.classList.toggle('is-sleep', now === 'night'); });
+        if (now === 'night' && !nudged && parentPrefs().bedtime !== false) {
+            nudged = true;
+            setTimeout(bedtimeNudge, 9000);
+        }
+    }
+
+    function bedtimeNudge() {
+        if (tod !== 'night' || busy) return;
+        var n = npcs.slice().sort(function (a, b) { return Math.abs(a.x - heroX) - Math.abs(b.x - heroX); })[0];
+        var line = 'כְּבָר מְאֻחָר... בּוֹאוּ נֵלֵךְ לִישֹׁן? 🌙';
+        if (n) { bubble(n.el, n.c.nik + ': ' + line, 4000); say(n.c.name + ': ' + plain(line)); }
+        $('hint').innerHTML = '';
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'night-btn';
+        b.textContent = '🌙 לַיְלָה טוֹב';
+        b.addEventListener('click', goodnight);
+        $('hint').appendChild(b);
+    }
+
+    /* אותה דמות, בעיניים עצומות */
+    function sleepyHero() {
+        return heroSVG(hero)
+            .replace('<circle cx="41" cy="52" r="4" fill="#1f2a52"/>', '<path d="M37 52 q4 4 8 0" stroke="#1f2a52" stroke-width="2.6" fill="none" stroke-linecap="round"/>')
+            .replace('<circle cx="59" cy="52" r="4" fill="#1f2a52"/>', '<path d="M55 52 q4 4 8 0" stroke="#1f2a52" stroke-width="2.6" fill="none" stroke-linecap="round"/>')
+            .replace(/<circle cx="(39\.6|57\.6)" cy="50\.6" r="1\.5" fill="#fff"\/>/g, '');
+    }
+
+    function goodnight() {
+        busy = true;
+        var o = document.createElement('div');
+        o.className = 'goodnight';
+        o.innerHTML = '<div class="gn-moon">🌙</div><div class="gn-stars"></div>' +
+            '<div class="gn-hero">' + sleepyHero() + '<span class="gn-z">z<br>z<br>z</span></div>' +
+            '<p class="gn-text">לַיְלָה טוֹב, ' + hero.name + '</p>' +
+            '<p class="gn-sub">הַחֲבֵרִים יְחַכּוּ כָּאן מָחָר 💛</p>' +
+            '<button class="gn-back" type="button" id="gnBack">הוֹרִים: לְחִיצָה אֲרֻכָּה כְּדֵי לְהַמְשִׁיךְ</button>';
+        document.body.appendChild(o);
+        say('לילה טוב, ' + plain(hero.name) + '. החברים יחכו כאן מחר');
+        [523, 440, 392, 349, 392, 440, 392, 330].forEach(function (f, i) { tone(f, .8 + i * .6, .8, 'sine', .07); });
+        holdToRun($('gnBack'), function () { o.remove(); busy = false; });
+    }
+
+    /* לחיצה ארוכה — משהו שהורה עושה בכוונה וילד לא יעשה בטעות */
+    function holdToRun(el, fn, ms) {
+        var t = null;
+        function start(e) { e.preventDefault(); el.classList.add('is-holding'); t = setTimeout(function () { el.classList.remove('is-holding'); fn(); }, ms || 1500); }
+        function stop() { el.classList.remove('is-holding'); clearTimeout(t); }
+        el.addEventListener('pointerdown', start);
+        el.addEventListener('pointerup', stop);
+        el.addEventListener('pointerleave', stop);
+        el.addEventListener('pointercancel', stop);
+    }
+
+    /* ============================================================== *
      * התחלה
      * ============================================================== */
 
@@ -831,15 +1037,25 @@
             PLACES.forEach(function (p) { if (p.el) p.el.classList.remove('is-open'); });
         });
 
-        setInterval(birds, 9000);
-        birds();
+        $('busBtn').addEventListener('click', openBusMap);
+
+        var sky = document.querySelector('.sky');
+        sky.insertAdjacentHTML('beforeend', '<div class="moon"></div><div class="stars"></div>');
+        applyTime();
+        setInterval(applyTime, 60000);
+
+        setInterval(function () { if (tod !== 'night') birds(); }, 9000);
+        if (tod !== 'night') birds();
         requestAnimationFrame(frame);
 
-        setTimeout(function () { say('ברוכים הבאים לעיר החברזים!'); }, 400);
+        setTimeout(function () {
+            say(tod === 'night' ? 'ששש... כולם כבר ישנים בעיר' : tod === 'evening' ? 'ערב טוב בעיר החברזים!' : 'ברוכים הבאים לעיר החברזים!');
+        }, 400);
     }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
     else init();
 
-    window.Town = { PLACES: PLACES, npcs: function () { return npcs; }, hero: function () { return { x: heroX, target: targetX, k: k }; }, walkTo: walkTo };
+    window.Town = { PLACES: PLACES, npcs: function () { return npcs; }, hero: function () { return { x: heroX, target: targetX, k: k }; },
+                    walkTo: walkTo, ride: ride, openBusMap: openBusMap, time: function () { return tod; }, busy: function () { return busy; } };
 })();
