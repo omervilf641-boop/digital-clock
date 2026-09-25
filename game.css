@@ -1510,3 +1510,70 @@ body {
 
 /* קישור למאפייה נראה כמו שאר כלי מסך הפתיחה */
 a.tool { display: grid; place-items: center; text-decoration: none; }
+
+/* ------------------------------------------------------------------ *
+ * רהיטים וצבע קיר
+ * ------------------------------------------------------------------ */
+
+.room { transition: background .6s ease; }
+
+.room.has-wall {
+    background: linear-gradient(180deg, var(--wall-top) 0%, var(--wall-top) 68%, #cf9f70 68%, #bf8f60 100%);
+}
+
+.room-furn {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.furn {
+    position: absolute;
+    padding: 0;
+    font: inherit;
+    line-height: 1;
+    background: none;
+    border: none;
+    cursor: pointer;
+    pointer-events: auto;
+    animation: furn-in .5s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+
+.furn.is-boing { animation: boing .55s cubic-bezier(.34, 1.56, .64, 1); }
+
+@keyframes furn-in { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes boing {
+    0%, 100% { transform: scale(1, 1); }
+    30%      { transform: scale(1.2, .8); }
+    60%      { transform: scale(.9, 1.12); }
+}
+
+.furn-bed      { left: 2%;  bottom: 6px;  font-size: clamp(56px, 14vw, 84px); }
+.furn-sofa     { right: 2%; bottom: 6px;  font-size: clamp(50px, 12vw, 76px); }
+.furn-plant    { left: 27%; bottom: 10px; font-size: clamp(36px, 9vw, 50px); }
+.furn-clock    { right: 4%; top: 10px; width: clamp(50px, 12vw, 66px); }
+.furn-clock svg { display: block; width: 100%; height: auto; }
+.furn-picture  { right: 24%; top: 14px; font-size: clamp(34px, 8vw, 46px); padding: 4px 6px; background: #fff; border: 5px solid #c98b5a; border-radius: 6px; }
+.furn-balloons { left: 42%; top: 2px; font-size: clamp(34px, 8vw, 46px); animation: furn-in .5s both, float-b 3s ease-in-out .5s infinite; }
+
+@keyframes float-b { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-8px) rotate(4deg); } }
+
+.room-walls { text-align: center; margin-top: 8px; }
+.wall-row { display: flex; justify-content: center; gap: 10px; }
+
+.wall-pick {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #fff;
+    border-radius: 14px;
+    box-shadow: 0 5px 0 rgba(62, 44, 74, .14);
+    cursor: pointer;
+}
+
+.wall-pick.is-on { outline: 4px solid var(--mint, #6fd6b0); outline-offset: 2px; }
+
+.furn-art { display: grid; place-items: center; width: 84px; height: 84px; }
+.furn-art.emoji { font-size: 56px; }
+.furn-art svg { width: 70px; height: 70px; }
+.furn-art.wall-swatch { width: 70px; height: 70px; margin: 7px; border-radius: 12px; border: 4px solid #fff; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
