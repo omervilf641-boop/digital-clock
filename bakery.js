@@ -786,29 +786,35 @@
             return;
         }
 
-        S.busy = true;
+        /* המקום על העוגה נתפס ברגע ההקשה, לא בנחיתה. ככה ילדה שסופרת
+           "אחת, שתיים" ולוחצת מהר רואה שתי תוספות נוחתות — ואף הקשה לא הולכת לאיבוד. */
         var i = S.cake.tops.length;
+        S.cake.tops.push(T.id);
+        S.flying = (S.flying || 0) + 1;
+
         var r = box.getBoundingClientRect();
         var slot = SLOTS[i % SLOTS.length];
         var target = { x: r.left + r.width * slot[0] / 100, y: r.top + r.height * slot[1] / 100 - 10 };
         sfx.tap();
         await fly(T.e, center(btn), target);
-        S.cake.tops.push(T.id);
+        S.flying--;
+        if (!$('tops')) return;                 /* עזבו את המסך באמצע המעוף */
         placeTopping(T, i, true);
         sfx.pop();
         sparks(target.x, target.y, ['#fff', '#ffcf4a'], 6);
 
         if (S.order) {
-            var n = countOf(T.id);
-            line(n + ' ' + T.e);
-            say(String(n));
+            /* סופרים את מה שכבר נחת, כדי שהמספר ששומעים יתאים למה שרואים */
+            var landed = Array.prototype.filter.call($('tops').children, function (el) { return el.textContent === T.e; }).length;
+            line(landed + ' ' + T.e);
+            say(String(landed));
         }
 
-        await later(250);
-        S.busy = false;
-
-        if (S.order && orderDone()) {
+        /* חוגגים רק כשהאחרונה נחתה */
+        if (S.order && orderDone() && S.flying === 0 && S.step === 'top') {
             S.busy = true;
+            S.step = 'done';
+            await later(250);
             box.classList.add('is-wobble');
             sfx.good();
             line('בְּדִיּוּק מָה שֶׁהִזְמַנְתִּי! 🤩');
