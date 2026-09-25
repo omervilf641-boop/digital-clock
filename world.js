@@ -367,6 +367,68 @@
                 door(162, 190, 58, 110, '#6fbf4f') +
                 '</svg>';
         },
+        school: function () {
+            return '<svg viewBox="0 0 290 310">' +
+                '<rect x="20" y="96" width="250" height="214" fill="#ffe9a8"/>' +
+                '<path d="M8 102 L145 30 L282 102 Z" fill="#ff7a59"/>' +
+                '<rect x="126" y="6" width="38" height="40" rx="6" fill="#ffe9a8" stroke="#ff7a59" stroke-width="4"/>' +
+                '<g class="bell"><path d="M134 36 q11 -26 22 0 z" fill="#ffd84a"/><circle cx="145" cy="38" r="3" fill="#d9a41c"/></g>' +
+                '<rect class="win" x="36" y="122" width="74" height="60" rx="8" fill="#2f6b4f" stroke="#fff" stroke-width="6"/>' +
+                '<text x="46" y="164" font-size="26" fill="#fff" font-weight="bold">א ב</text>' +
+                '<rect class="win" x="180" y="122" width="74" height="60" rx="8" fill="#d9f3ff" stroke="#fff" stroke-width="6"/>' +
+                '<text x="192" y="164" font-size="26">✏️📚</text>' +
+                '<rect x="20" y="200" width="250" height="10" fill="#ff7a59" opacity=".6"/>' +
+                door(113, 216, 64, 94, '#4ea9ff') +
+                '<path d="M113 216 q32 -28 64 0" fill="#4ea9ff" opacity=".4"/>' +
+                '</svg>';
+        },
+        fire: function () {
+            return '<svg viewBox="0 0 280 300">' +
+                '<rect x="14" y="80" width="252" height="220" fill="#e8434f"/>' +
+                '<rect x="4" y="66" width="272" height="22" rx="6" fill="#b52a35"/>' +
+                '<rect x="104" y="16" width="72" height="54" fill="#e8434f"/><path d="M96 22 h88 l-8 -14 h-72 z" fill="#b52a35"/>' +
+                '<circle cx="140" cy="44" r="18" fill="#fff" stroke="#b52a35" stroke-width="4"/><path d="M140 44 v-11 M140 44 l8 5" stroke="#3e2c4a" stroke-width="3" stroke-linecap="round"/>' +
+                '<g class="siren"><rect x="18" y="44" width="26" height="22" rx="8" fill="#4ea9ff"/><rect x="236" y="44" width="26" height="22" rx="8" fill="#ff5f5f"/></g>' +
+                '<rect x="26" y="120" width="146" height="180" rx="10" fill="#fff4f4"/>' +
+                '<path d="M26 142 h146 M26 164 h146 M26 186 h146" stroke="#e7c9cb" stroke-width="3"/>' +
+                '<text x="44" y="276" font-size="64">🚒</text>' +
+                door(188, 196, 52, 104, '#ffd84a') +
+                '</svg>';
+        },
+        luna: function () {
+            var spokes = '', cabins = '';
+            for (var i = 0; i < 8; i++) {
+                var a = i * Math.PI / 4, x = 160 + Math.cos(a) * 86, y = 110 + Math.sin(a) * 86;
+                spokes += '<path d="M160 110 L' + x.toFixed(1) + ' ' + y.toFixed(1) + '" stroke="#ffd84a" stroke-width="4"/>';
+                cabins += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="11" fill="' + ['#ff5f7e', '#4ea9ff', '#6fd6b0', '#a97bff'][i % 4] + '"/>';
+            }
+            return '<svg viewBox="0 0 320 320">' +
+                '<path d="M120 310 L160 110 L200 310" stroke="#a97bff" stroke-width="10" fill="none"/>' +
+                '<g class="ferris"><circle cx="160" cy="110" r="86" stroke="#ff8fb8" stroke-width="6" fill="none"/>' + spokes + cabins + '</g>' +
+                '<circle cx="160" cy="110" r="10" fill="#ffd84a"/>' +
+                '<rect x="10" y="236" width="300" height="74" fill="#fff0f7"/>' +
+                '<path d="M4 240 h312 l-16 -26 h-280 z" fill="#ff8fb8"/>' +
+                '<path d="M20 214 l12 26 l12 -26 l12 26 l12 -26 l12 26 l12 -26 l12 26 l12 -26 l12 26 l12 -26 l12 26 l12 -26 l12 26 l12 -26 l12 26 l12 -26 l12 26 l12 -26 l12 26 l12 -26 l12 26 l12 -26 l12 26" fill="none" stroke="#fff" stroke-width="3"/>' +
+                '<text x="22" y="292" font-size="30">🎈🍭</text><text x="236" y="292" font-size="30">🎠🎪</text>' +
+                '<rect class="door" x="130" y="252" width="60" height="58" rx="6" fill="#a97bff"/>' +
+                '</svg>';
+        },
+        pool: function () {
+            return '<svg viewBox="0 0 300 300">' +
+                '<text x="10" y="44" font-size="34">☀️</text>' +
+                '<g class="umbrella"><path d="M150 290 v-140" stroke="#a26a3e" stroke-width="5"/>' +
+                '<path d="M96 156 q54 -64 108 0 z" fill="#ff5f7e"/><path d="M123 156 q27 -64 54 0" fill="#fff"/></g>' +
+                '<rect x="0" y="222" width="300" height="78" fill="#ffe3a3"/>' +
+                '<rect x="8" y="236" width="170" height="54" rx="16" fill="#4fc3f7" stroke="#fff" stroke-width="6"/>' +
+                '<path class="ripple" d="M24 258 q10 -8 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" stroke="#fff" stroke-width="3" fill="none"/>' +
+                '<path d="M30 236 v-90 h52" stroke="#fff" stroke-width="6" fill="none"/><rect x="74" y="140" width="62" height="10" rx="4" fill="#4ea9ff"/>' +
+                '<text x="120" y="282" font-size="22">🦆</text>' +
+                '<rect x="200" y="150" width="84" height="150" fill="#fff"/>' +
+                '<path d="M200 150 h84 M200 180 h84 M200 210 h84 M200 240 h84 M200 270 h84" stroke="#8fd0ff" stroke-width="12"/>' +
+                '<path d="M192 154 L242 118 L292 154 Z" fill="#4ea9ff"/>' +
+                door(218, 216, 44, 84, '#ff8fb8') +
+                '</svg>';
+        },
         tree: function () {
             return '<svg viewBox="0 0 120 200"><rect x="52" y="110" width="16" height="90" rx="6" fill="#a26a3e"/>' +
                 '<circle cx="60" cy="70" r="50" fill="#6fbf4f"/><circle cx="34" cy="92" r="30" fill="#7cc25c"/><circle cx="88" cy="90" r="32" fill="#7cc25c"/>' +
@@ -447,14 +509,21 @@
         { kind: 'icecream', x: 4150, w: 240, doorX: 176, nik: 'הַגְּלִידָרִיָּה',        say: 'הגלידרייה',       go: 'places.html#icecream', emoji: '🍦' },
         { kind: 'studio',   x: 4440, w: 260, doorX: 190, nik: 'סְטוּדְיוֹ הַצִּיּוּר',     say: 'סטודיו הציור',    go: 'places.html#studio',   emoji: '🎨' },
         { kind: 'tree',     x: 4640, w: 120 },
-        { kind: 'soon',     x: 4860, w: 260, act: 'soon',  nik: 'בִּנְיָן חָדָשׁ',       say: 'כאן ייבנה בניין חדש' },
-        { kind: 'lamp',     x: 5060, w: 50 },
-        { kind: 'dock',     x: 5220, w: 220, nik: 'הַנָּמָל', emoji: '⚓' },
-        { kind: 'boat',     x: 5380, w: 200, act: 'boat', doorX: 100, nik: 'הַנָּמָל — לָאִי', say: 'הנמל. מפליגים לאי החברזים', go: 'game.html#map', emoji: '⛵' }
+        { kind: 'school',   x: 4900, w: 290, doorX: 145, nik: 'בֵּית הַסֵּפֶר',          say: 'בית הספר',        go: 'places.html#school',   emoji: '🏫' },
+        { kind: 'fire',     x: 5240, w: 280, doorX: 214, nik: 'תַּחֲנַת הַכַּבָּאִים',     say: 'תחנת הכבאים',     go: 'places.html#fire',     emoji: '🚒' },
+        { kind: 'busstop',  x: 5440, w: 70,  act: 'bus', nik: 'תַּחֲנַת הָאוֹטוֹבּוּס', say: 'תחנת האוטובוס', emoji: '🚏' },
+        { kind: 'luna',     x: 5670, w: 320, doorX: 160, nik: 'הַלּוּנָה פַּארְק',        say: 'הלונה פארק',      go: 'places.html#luna',     emoji: '🎡' },
+        { kind: 'flowers',  x: 5890, w: 90,  act: 'flower' },
+        { kind: 'pool',     x: 6100, w: 300, doorX: 240, nik: 'הַבְּרֵכָה וְהַחוֹף',      say: 'הבריכה והחוף',    go: 'places.html#pool',     emoji: '🏊' },
+        { kind: 'tree',     x: 6320, w: 120 },
+        { kind: 'soon',     x: 6520, w: 260, act: 'soon',  nik: 'בִּנְיָן חָדָשׁ',       say: 'כאן ייבנה בניין חדש' },
+        { kind: 'lamp',     x: 6700, w: 50 },
+        { kind: 'dock',     x: 6860, w: 220, nik: 'הַנָּמָל', emoji: '⚓' },
+        { kind: 'boat',     x: 7020, w: 200, act: 'boat', doorX: 100, nik: 'הַנָּמָל — לָאִי', say: 'הנמל. מפליגים לאי החברזים', go: 'game.html#map', emoji: '⛵' }
     ];
 
-    var WORLD_W = 5580;
-    var WATER_FROM = 5140;
+    var WORLD_W = 7220;
+    var WATER_FROM = 6780;
 
     /* ============================================================== *
      * בנייה

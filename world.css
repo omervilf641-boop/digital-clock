@@ -561,6 +561,20 @@ body {
 
 .big-cone { transform-box: fill-box; transform-origin: bottom center; animation: sway 2.6s ease-in-out infinite; }
 
+.bell { transform-box: fill-box; transform-origin: top center; animation: ring 2.2s ease-in-out infinite; }
+@keyframes ring { 0%, 60%, 100% { transform: rotate(0); } 70% { transform: rotate(-16deg); } 80% { transform: rotate(14deg); } 90% { transform: rotate(-8deg); } }
+
+.siren rect { animation: siren 1s steps(1) infinite; }
+.siren rect + rect { animation-delay: -.5s; }
+@keyframes siren { 0% { opacity: 1; } 50% { opacity: .25; } }
+
+.ferris { transform-box: view-box; transform-origin: 160px 110px; animation: spin-wheel 14s linear infinite; }
+@keyframes spin-wheel { to { transform: rotate(360deg); } }
+
+.umbrella { transform-box: fill-box; transform-origin: bottom center; animation: sway 3.4s ease-in-out infinite; }
+.ripple { animation: ripple 1.6s ease-in-out infinite; }
+@keyframes ripple { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(8px); } }
+
 /* כפתור ההתקנה — קופץ ומזמין, רק כשהדפדפן באמת מוכן */
 .tool.install { background: #6fd6b0; animation: invite 1.6s ease-in-out infinite; }
 .tool.install[hidden] { display: none; }

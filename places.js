@@ -2,6 +2,7 @@
  * בנייני העיר — שישה מקומות, כל אחד מודול קטן
  *
  * places.html#clinic, #salon, #garden, #music, #icecream, #studio.
+ * (#school, #fire, #luna, #pool נמצאים ב-places-more.js)
  * הכללים של כל המשחקים חלים גם כאן: אין הפסד, אין שעון שרודף,
  * כל הוראה מוקראת, וכל בחירה לא נכונה מקבלת רמז ולא עונש.
  * ------------------------------------------------------------------ */
@@ -1077,9 +1078,14 @@
         P.run();
     }
 
+    /* places-more.js מוסיף לכאן עוד בניינים, עם אותם כלים */
+    window.Places = {
+        PLACES: PLACES, WAIT: WAIT, loadGarden: loadGarden, route: route,
+        ui: { line: line, stage: stage, tray: tray, pick: pick, bigBtn: bigBtn, row: row, shells: shells,
+              payShell: payShell, walkIn: walkIn, setMood: setMood, every: every, after: after, onLeave: onLeave }
+    };
+
     window.addEventListener('hashchange', route);
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', route);
     else route();
-
-    window.Places = { PLACES: PLACES, WAIT: WAIT, loadGarden: loadGarden, route: route };
 })();

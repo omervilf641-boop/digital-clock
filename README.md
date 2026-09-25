@@ -282,7 +282,7 @@ title. The town remembers where you were standing when you come back.
 Between the buildings is the part that makes it a place and not a menu: a fountain that splashes,
 a swing that goes higher when tapped, a slide a nearby friend goes down, flowers that spin, a
 chimney that smokes, birds, drifting clouds, and a construction site with a crane and a
-**בְּקָרוֹב** sign — the spot for whatever gets built next. Six more buildings line the second half
+**בְּקָרוֹב** sign — the spot for whatever gets built next. Ten more buildings line the second half
 of the street; see below.
 
 The town keeps no state of its own beyond your position on the street. The character, the friends
@@ -307,9 +307,23 @@ reads and writes to the island's save.
 Same rules as everywhere else: nothing can be lost, wrong picks get a gentle word and then a
 pulsing hint, and every instruction is spoken.
 
+### Four at the end of the street (`places-more.js`)
+
+Past the studio, where the construction site used to be, there are four more buildings. They're in
+the same page (`#school`, `#fire`, `#luna`, `#pool`) and use the same helpers, which `places.js`
+exposes as `Places.ui`. A third bus stop sits among them, and the construction site has moved on to
+the end of the street.
+
+| Building | What you do | What it changes elsewhere |
+|---|---|---|
+| 🏫 בית הספר | You're the teacher, in glasses with a pointer; three friends sit at desks and put their hands up. There are three lessons: find the letter they ask for, pick the letter a picture's word starts with, and build a first word (אַבָּא, בַּיִת, כֶּלֶב…) from letter tiles, right to left. Every answer earns a star, and five stars earn a sticker for the notebook 📒. More stickers bring in more letters and longer words | Each sticker pays two shells (`school.v1`) |
+| 🚒 תחנת הכבאים | The fire truck drives in with its siren. Small fires with faces sit on the roofs and windows, and each needs three sprays from the hose. Then a cat is stuck in the tree: the ladder goes up, your character (in a helmet) climbs, and the cat comes down in their arms. Each call has one more fire, up to five | A rescue pays two shells |
+| 🎡 הלונה פארק | A carousel that turns with a waltz, a ferris wheel whose cabins stay upright (fireworks at the top), a can pyramid where knocking out a bottom can brings down the ones resting on it, and balloons where only the colour asked for pops, counted aloud up to five | Cans and balloons win a soft-toy prize for the shelf (`luna.v1`) and a shell |
+| 🏊 הבריכה והחוף | Jump off the diving board in goggles and a swim ring: a cannonball, a flip or an arrow, each with its own splash, and friends in the pool hold up score cards. Build a sandcastle to a friend's order (how many towers, which colour flag); tap a tower to take it down, or send a wave to start again. Or dig for five shells, with a crab that runs off, a starfish, and sometimes a rare gold shell | Every shell dug goes in the purse; a gold one is worth five (`pool.v1`) |
+
 ### Getting around, day and night, and the parent corner
 
-**The bus.** Two stops on the street, and 🚌 in the top bar, open a small map of every door. Pick
+**The bus.** Three stops on the street, and 🚌 in the top bar, open a small map of every door. Pick
 one and a bus pulls up, the character climbs on, and the camera rides along the street to the
 door. The far end of a long street is otherwise somewhere a five-year-old never walks to.
 
@@ -329,7 +343,7 @@ limit (20–60 minutes), switch the bedtime nudge on or off, and control sound a
 limit is reached, every page shows a gentle "time for a break" screen, and a long press gives
 fifteen more minutes. The count resets at midnight. All of it stays in `localStorage` on the device.
 
-**Installing** now installs the whole world: the icon opens the town, and all nineteen files are
+**Installing** now installs the whole world: the icon opens the town, and all twenty-one files are
 cached up front, so a building never visited before still opens with no connection.
 
 ## Also here: המאפייה של החברזים (`bakery.html`)

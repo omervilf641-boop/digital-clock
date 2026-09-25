@@ -8,11 +8,11 @@
  * כשמוסיפים קובץ למשחק, מוסיפים אותו גם לרשימה ומעלים את הגרסה.
  * ------------------------------------------------------------------ */
 
-var CACHE = 'chavrezim-v4';
+var CACHE = 'chavrezim-v5';
 
 var SHELL = [
     './world.html', './world.css', './world.js', './kit.js', './pwa.js', './parent.js',
-    './places.html', './places.css', './places.js',
+    './places.html', './places.css', './places.js', './places-more.css', './places-more.js',
     './bakery.html', './bakery.css', './bakery.js',
     './game.html',
     './game.css',
