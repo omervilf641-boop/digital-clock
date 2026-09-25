@@ -267,6 +267,106 @@ in `localStorage`; the 🔊,
 🗣️ and ↺ buttons on the title screen toggle sound, speech, and start over. No build step and no dependencies — `game.html`, `game.css`, `game.js`,
 with the webfont embedded.
 
+## עיר החברזים (`world.html`) — where everything connects
+
+An open town to walk around in, and the front door to both games. The character from the island
+walks along one long street wherever you tap (or while an arrow is held), and the friends that
+player has caught wander the pavement too; tap one and it jumps and says hello by name.
+
+The buildings are doors: **הַבַּיִת שֶׁלִּי** opens your room, **הַמַּאֲפִיָּה** the bakery,
+**הַחֲנוּת שֶׁל צִדְפּוֹנִי** the shop, **בֵּית הַחֲבֵרִים** the album, and the boat at **הַנָּמָל** sails
+to the island map. Walk up to a door and it swings open, your character steps inside, and the
+game opens on that exact screen (`game.html#shop`, `#room`, `#album`, `#map`) rather than on its
+title. The town remembers where you were standing when you come back.
+
+Between the buildings is the part that makes it a place and not a menu: a fountain that splashes,
+a swing that goes higher when tapped, a slide a nearby friend goes down, flowers that spin, a
+chimney that smokes, birds, drifting clouds, and a construction site with a crane and a
+**בְּקָרוֹב** sign — the spot for whatever gets built next. Ten more buildings line the second half
+of the street; see below.
+
+The town keeps no state of its own beyond your position on the street. The character, the friends
+and the sound setting are all read from the island's save, so whatever happens there shows up here.
+
+### Six more buildings (`places.html`)
+
+The town's second half is six more doors, all in one page (`places.html#clinic`, `#salon`,
+`#garden`, `#music`, `#icecream`, `#studio`), each its own small module. They share `kit.js`:
+the character and creature drawing, sound and speech, the flying and sparkling effects, and safe
+reads and writes to the island's save.
+
+| Building | What you do | What it changes elsewhere |
+|---|---|---|
+| 🩺 מרפאת החברזים | A friend arrives with a fever, a scratch or a cough; pick the right tools in order — thermometer then a cold compress, wash then a plaster, listen to the heart then syrup — and they get better | A caught friend who's treated leaves happy and rested on the island too |
+| 💇 המספרה | Cut and dye your own character's hair (scissors orbit, clippings fall), plus foam and a hair-dryer just for fun | The new look is saved to your character everywhere; shop-only styles stay locked until bought |
+| 🌱 הגינה | Plant strawberries, sunflowers, mushrooms or a chestnut tree, water them, and come back — they grow in real time: the first sprout in under a minute, ripe after a few hours | A harvest puts two of that treasure and a shell into your bag, ready for the room's shelf |
+| 🎵 אולם המוזיקה | Four friends each play an instrument; tap to play, "repeat after me" builds from two notes to six, and a show turns on the disco lights | — |
+| 🍦 הגלידרייה | Build the cone a customer draws for you, scoop by scoop in order, then add the topping | Each cone served pays a shell |
+| 🎨 סטודיו הציור | Three colouring pages, ten paints, a surprise-me button, and a wall to hang finished pictures on | The latest picture hangs in the studio's window on the street |
+
+Same rules as everywhere else: nothing can be lost, wrong picks get a gentle word and then a
+pulsing hint, and every instruction is spoken.
+
+### Four at the end of the street (`places-more.js`)
+
+Past the studio, where the construction site used to be, there are four more buildings. They're in
+the same page (`#school`, `#fire`, `#luna`, `#pool`) and use the same helpers, which `places.js`
+exposes as `Places.ui`. A third bus stop sits among them, and the construction site has moved on to
+the end of the street.
+
+| Building | What you do | What it changes elsewhere |
+|---|---|---|
+| 🏫 בית הספר | You're the teacher, in glasses with a pointer; three friends sit at desks and put their hands up. There are three lessons: find the letter they ask for, pick the letter a picture's word starts with, and build a first word (אַבָּא, בַּיִת, כֶּלֶב…) from letter tiles, right to left. Every answer earns a star, and five stars earn a sticker for the notebook 📒. More stickers bring in more letters and longer words | Each sticker pays two shells (`school.v1`) |
+| 🚒 תחנת הכבאים | The fire truck drives in with its siren. Small fires with faces sit on the roofs and windows, and each needs three sprays from the hose. Then a cat is stuck in the tree: the ladder goes up, your character (in a helmet) climbs, and the cat comes down in their arms. Each call has one more fire, up to five | A rescue pays two shells |
+| 🎡 הלונה פארק | A carousel that turns with a waltz, a ferris wheel whose cabins stay upright (fireworks at the top), a can pyramid where knocking out a bottom can brings down the ones resting on it, and balloons where only the colour asked for pops, counted aloud up to five | Cans and balloons win a soft-toy prize for the shelf (`luna.v1`) and a shell |
+| 🏊 הבריכה והחוף | Jump off the diving board in goggles and a swim ring: a cannonball, a flip or an arrow, each with its own splash, and friends in the pool hold up score cards. Build a sandcastle to a friend's order (how many towers, which colour flag); tap a tower to take it down, or send a wave to start again. Or dig for five shells, with a crab that runs off, a starfish, and sometimes a rare gold shell | Every shell dug goes in the purse; a gold one is worth five (`pool.v1`) |
+
+### Getting around, day and night, and the parent corner
+
+**The bus.** Three stops on the street, and 🚌 in the top bar, open a small map of every door. Pick
+one and a bus pulls up, the character climbs on, and the camera rides along the street to the
+door. The far end of a long street is otherwise somewhere a five-year-old never walks to.
+
+**Day and night follow the real clock.** From 17:00 the town turns to evening, with a low orange
+sun and the street lamps on. From 19:30 it's night: moon and stars, glowing windows, and the friends
+asleep where they stand. A little while into a night visit, the nearest friend yawns that it's late
+and offers **🌙 לילה טוב**, which opens a goodnight screen with the character asleep and a short
+lullaby. `?time=day|evening|night` overrides the clock.
+
+**The room** can be furnished from a new shelf in צדפוני's shop: a bed, a sofa, a plant, balloons,
+a rainbow picture, and a wall clock that shows the real time and says it aloud when tapped. There are
+also four wall colours to switch between.
+
+**🔒 The parent corner** opens only with a long press (1.5 s), which an adult does on purpose and a
+child doesn't do by accident. It shows how many minutes were played today. It lets you set a daily
+limit (20–60 minutes), switch the bedtime nudge on or off, and control sound and speech. When the
+limit is reached, every page shows a gentle "time for a break" screen, and a long press gives
+fifteen more minutes. The count resets at midnight. All of it stays in `localStorage` on the device.
+
+**Installing** now installs the whole world: the icon opens the town, and all twenty-one files are
+cached up front, so a building never visited before still opens with no connection.
+
+## Also here: המאפייה של החברזים (`bakery.html`)
+
+A second game for the same child, set in the same world. A chavrez walks into the bakery and orders
+a cake — as a picture, and out loud — and you make it in four steps: pick the dough, bake it, pick
+the frosting, count on the toppings. Then you serve it, and they eat it.
+
+Almost everything moves. The customer walks in through a door that swings open with a bell, the
+whisk beats the batter while drops splash out of the bowl, the oven glows and its timer fills while
+the pan rises, the frosting drips down the sides, each topping flies in an arc and lands with a
+squash, and the finished cake flies to the customer, who eats it in a shower of crumbs, hearts and
+coins before walking back out. Nearly all of it is CSS keyframes switched on by classes; only the
+flight paths are computed in JS, because they depend on where things actually are on screen.
+
+Same rules as the island: nothing can be lost, there is no clock (the oven never burns), and every
+order is both drawn and spoken so it can be played without reading. A wrong choice makes the
+customer frown and repeat the order; a second one makes the right button pulse. Orders grow from
+one or two toppings to five, then two kinds at once, and new toppings unlock as cakes are served.
+**מִטְבָּח חָפְשִׁי** drops the orders entirely — anything goes, and the customer loves it regardless.
+
+The two games link to each other from their title screens.
+
 ## License
 
 MIT.

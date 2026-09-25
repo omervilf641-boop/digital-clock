@@ -272,7 +272,8 @@
             caught: [], care: {}, hero: null, treasures: {},
             owned: [],      /* אביזרים ותספורות שנקנו */
             worn: {},       /* מה כל חברז לובש: { id: { head: 'crown', ... } } */
-            room: []        /* מה מונח על המדף בחדר */
+            room: [],       /* מה מונח על המדף בחדר */
+            wall: null      /* צבע הקיר שנבחר, מתוך מה שנקנה */
         };
     }
 
@@ -290,6 +291,7 @@
         if (Array.isArray(saved.owned)) p.owned = saved.owned;
         if (saved.worn && typeof saved.worn === 'object') p.worn = saved.worn;
         if (Array.isArray(saved.room)) p.room = saved.room;
+        if (typeof saved.wall === 'string') p.wall = saved.wall;
 
         /* שמירות מלפני מערכת הטיפול — נותנים להן מצב פתיחה טוב */
         p.caught.forEach(function (id) {
@@ -829,6 +831,51 @@
         $('heroBtnLabel').textContent = state.hero ? heroName() : 'הַדְּמוּת שֶׁלִּי';
         $('soundBtn').setAttribute('aria-pressed', String(settings.sound));
         $('voiceBtn').setAttribute('aria-pressed', String(settings.voice));
+    }
+
+    /* ============================================================== *
+     * התקנה למסך הבית
+     *
+     * כרום מציע התקנה לפי שיקולים משלו, ולפעמים פשוט לא מציע. אז אנחנו
+     * תופסים את האירוע ומציגים כפתור משלנו במסך הפתיחה — בעברית, בגודל
+     * שילד רואה. כשאין אירוע (המשחק כבר מותקן, או דפדפן שלא תומך)
+     * הכפתור פשוט לא מופיע ושום דבר אחר לא משתנה.
+     * ============================================================== */
+
+    var installPrompt = null;
+
+    function installed() {
+        return window.matchMedia('(display-mode: standalone)').matches ||
+               window.navigator.standalone === true;
+    }
+
+    function showInstall(on) {
+        var btn = $('installBtn');
+        if (btn) btn.hidden = !on;
+    }
+
+    function watchInstall() {
+        window.addEventListener('beforeinstallprompt', function (event) {
+            event.preventDefault();      /* לא נותנים לכרום להחליט מתי */
+            installPrompt = event;
+            if (!installed()) showInstall(true);
+        });
+
+        window.addEventListener('appinstalled', function () {
+            installPrompt = null;
+            showInstall(false);
+            say('המשחק הותקן! אפשר לפתוח אותו מהמסך הראשי');
+        });
+
+        $('installBtn').addEventListener('click', function () {
+            if (!installPrompt) return;
+            sfx.tap();
+            installPrompt.prompt();
+            installPrompt.userChoice.then(function () {
+                installPrompt = null;
+                showInstall(false);
+            });
+        });
     }
 
     /* ============================================================== *
@@ -1608,6 +1655,51 @@
         '</svg>';
     }
 
+    /* ============================================================== *
+     * רהיטים וצבעי קיר לחדר
+     *
+     * עוד משהו לחסוך אליו אחרי שכל האביזרים נקנו. רהיט שנקנה מופיע
+     * בחדר מעצמו במקום שלו — בלי סידור ובלי גרירה.
+     * ============================================================== */
+
+    var FURNITURE = [
+        { id: 'f_bed',      nik: 'מִטָּה',         say: 'מיטה',         e: '🛏️', price: 10, spot: 'bed' },
+        { id: 'f_sofa',     nik: 'סַפָּה',         say: 'ספה',          e: '🛋️', price: 8,  spot: 'sofa' },
+        { id: 'f_plant',    nik: 'עָצִיץ',         say: 'עציץ',         e: '🪴', price: 4,  spot: 'plant' },
+        { id: 'f_clock',    nik: 'שְׁעוֹן קִיר',     say: 'שעון קיר',     e: '🕰️', price: 5,  spot: 'clock' },
+        { id: 'f_rainbow',  nik: 'תְּמוּנַת קֶשֶׁת',  say: 'תמונת קשת',    e: '🌈', price: 5,  spot: 'picture' },
+        { id: 'f_balloons', nik: 'בָּלוֹנִים',       say: 'בלונים',       e: '🎈', price: 6,  spot: 'balloons' }
+    ];
+
+    var WALLS = [
+        { id: 'w_sky',   nik: 'קִיר תְּכֵלֶת', say: 'קיר תכלת', top: '#c4e4ff', bottom: '#a9d6ff', price: 4 },
+        { id: 'w_mint',  nik: 'קִיר מֶנְטָה',  say: 'קיר מנטה', top: '#c3f0d9', bottom: '#a4e6c6', price: 4 },
+        { id: 'w_lilac', nik: 'קִיר סָגֹל',    say: 'קיר סגול', top: '#e0d0ff', bottom: '#cdb6ff', price: 4 },
+        { id: 'w_sun',   nik: 'קִיר צָהֹב',    say: 'קיר צהוב', top: '#fff0a6', bottom: '#ffe27a', price: 4 }
+    ];
+
+    function isRoomThing(key) { return /^(f|w)_/.test(key); }
+
+    /* שעון אמיתי על הקיר — הרפו הזה התחיל כשעון, זה המקום שלו */
+    function clockSVG() {
+        var d = new Date();
+        var m = d.getMinutes(), h = d.getHours() % 12 + m / 60;
+        var hand = function (deg, len, w, c) {
+            var a = (deg - 90) * Math.PI / 180;
+            return '<line x1="50" y1="50" x2="' + (50 + Math.cos(a) * len).toFixed(1) + '" y2="' + (50 + Math.sin(a) * len).toFixed(1) +
+                   '" stroke="' + c + '" stroke-width="' + w + '" stroke-linecap="round"/>';
+        };
+        var ticks = '';
+        for (var i = 0; i < 12; i++) {
+            var a = i * 30 * Math.PI / 180;
+            ticks += '<circle cx="' + (50 + Math.sin(a) * 36).toFixed(1) + '" cy="' + (50 - Math.cos(a) * 36).toFixed(1) + '" r="' + (i % 3 ? 2 : 3.5) + '" fill="#6d3fbf"/>';
+        }
+        return '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#c98b5a" stroke-width="7"/>' + ticks +
+               hand(h * 30, 22, 6, '#3e2c4a') + hand(m * 6, 32, 4, '#e0628f') + '<circle cx="50" cy="50" r="5" fill="#3e2c4a"/></svg>';
+    }
+
+    var HOURS = ['שתים עשרה', 'אחת', 'שתיים', 'שלוש', 'ארבע', 'חמש', 'שש', 'שבע', 'שמונה', 'תשע', 'עשר', 'אחת עשרה'];
+
     function renderShop() {
         $('purse').textContent = COIN + coins();
         $('shopkeeper').innerHTML = creatureSVG(SHOPKEEPER);
@@ -1632,6 +1724,14 @@
         buildShelf($('shelfDolls'), 'בֻּבּוֹת', DOLLS.map(function (item) {
             return { key: item.id, nik: item.nik, say: item.say, price: item.price, art: previewSVG(item) };
         }));
+
+        buildShelf($('shelfRoom'), 'לַחֶדֶר שֶׁלִּי', FURNITURE.map(function (f) {
+            return { key: f.id, nik: f.nik, say: f.say, price: f.price,
+                     art: f.id === 'f_clock' ? '<span class="furn-art">' + clockSVG() + '</span>' : '<span class="furn-art emoji">' + f.e + '</span>' };
+        }).concat(WALLS.map(function (w) {
+            return { key: w.id, nik: w.nik, say: w.say, price: w.price,
+                     art: '<span class="furn-art wall-swatch" style="background:linear-gradient(' + w.top + ',' + w.bottom + ')"></span>' };
+        })));
 
         buildShelf($('shelfHair'), 'תִּסְפֹּרֶת בִּשְׁבִילִי', Object.keys(HAIR_SHOP).map(function (style) {
             var info = HAIR_SHOP[style];
@@ -1678,8 +1778,13 @@
     function buy(item, have) {
         if (have) {
             sfx.tap();
-            $('shopSpeech').textContent = 'זֶה כְּבָר שֶׁלָּכֶם! תִּלְבְּשׁוּ אוֹתוֹ אֵצֶל הַחֲבֵרִים.';
-            say('זה כבר שלכם. תלבישו אותו אצל החברים');
+            if (isRoomThing(item.key)) {
+                $('shopSpeech').textContent = 'זֶה כְּבָר בַּחֶדֶר שֶׁלָּכֶם! 🏡';
+                say('זה כבר בחדר שלכם');
+            } else {
+                $('shopSpeech').textContent = 'זֶה כְּבָר שֶׁלָּכֶם! תִּלְבְּשׁוּ אוֹתוֹ אֵצֶל הַחֲבֵרִים.';
+                say('זה כבר שלכם. תלבישו אותו אצל החברים');
+            }
             return;
         }
 
@@ -1695,6 +1800,7 @@
 
         spend(item.price);
         state.owned.push(item.key);
+        if (/^w_/.test(item.key)) state.wall = item.key;    /* קיר חדש נצבע מיד */
         save();
         sfx.good();
         confetti(22);
@@ -1744,9 +1850,68 @@
             : key;
     }
 
+    function renderFurniture() {
+        var W = WALLS.filter(function (w) { return w.id === state.wall && owns(w.id); })[0];
+        $('room').style.setProperty('--wall-top', W ? W.top : '');
+        $('room').classList.toggle('has-wall', !!W);
+
+        var box = $('roomFurn');
+        box.innerHTML = '';
+        FURNITURE.forEach(function (f) {
+            if (!owns(f.id)) return;
+            var el = document.createElement('button');
+            el.type = 'button';
+            el.className = 'furn furn-' + f.spot;
+            el.innerHTML = f.id === 'f_clock' ? clockSVG() : f.e;
+            el.setAttribute('aria-label', f.say);
+            el.addEventListener('click', function () {
+                el.classList.remove('is-boing');
+                void el.offsetWidth;
+                el.classList.add('is-boing');
+                sfx.tap();
+                if (f.id === 'f_clock') {
+                    var d = new Date(), m = d.getMinutes();
+                    var h = HOURS[d.getHours() % 12];
+                    say('השעה ' + h + (m < 8 ? '' : m < 23 ? ' ורבע' : m < 38 ? ' וחצי' : m < 53 ? ' ושלושת רבעי' : ''));
+                } else if (f.id === 'f_bed') {
+                    say('איזו מיטה נוחה...');
+                } else if (f.id === 'f_balloons') {
+                    tone(900, 0, .2, 'sine', .1); tone(1200, .1, .25, 'sine', .08);
+                }
+            });
+            box.appendChild(el);
+        });
+
+        var walls = WALLS.filter(function (w) { return owns(w.id); });
+        var row = $('roomWalls');
+        row.innerHTML = '';
+        if (walls.length) {
+            row.innerHTML = '<p class="panel-q">צֶבַע הַקִּיר</p>';
+            var line = document.createElement('div');
+            line.className = 'wall-row';
+            [{ id: null, top: '#ffeed4', bottom: '#ffe3bd', say: 'הקיר הרגיל' }].concat(walls).forEach(function (w) {
+                var b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'wall-pick' + ((state.wall || null) === w.id ? ' is-on' : '');
+                b.style.background = 'linear-gradient(' + w.top + ',' + w.bottom + ')';
+                b.setAttribute('aria-label', w.say);
+                b.addEventListener('click', function () {
+                    state.wall = w.id;
+                    save();
+                    sfx.tap();
+                    say(w.say);
+                    renderFurniture();
+                });
+                line.appendChild(b);
+            });
+            row.appendChild(line);
+        }
+    }
+
     function renderRoom() {
         $('roomTitle').textContent = 'הַחֶדֶר שֶׁל ' + heroName();
         $('roomHero').innerHTML = heroSVG(state.hero);
+        renderFurniture();
 
         var shelf = $('roomShelf');
         shelf.innerHTML = '';
@@ -2415,6 +2580,7 @@
 
     function init() {
         load();
+        watchInstall();
 
         $('playBtn').addEventListener('click', function () {
             sfx.page();
@@ -2507,6 +2673,15 @@
             window.speechSynthesis.onvoiceschanged = function () { /* מרענן את הרשימה */ };
         }
 
+        /* הגעה מהעיר עם יעד (#shop, #room, #album, #map): השחקן כבר נבחר
+           בעיר, אז נכנסים ישר לבניין שנלחץ ולא עוברים דרך "מי משחק" */
+        var from = (location.hash || '').slice(1);
+        var DOORS = { shop: 'shop', room: 'room', album: 'album', map: 'map' };
+        if (DOORS[from] && state && state.hero) {
+            show(DOORS[from]);
+            return;
+        }
+
         /* מי שכבר יש לו דמות רואה קודם את בחירת השחקן; מי שלא — בונה אחת */
         if (players.some(function (p) { return p.hero; })) {
             show('who');
@@ -2527,7 +2702,7 @@
         CREATURES: CREATURES, AREAS: AREAS,
         makePuzzle: makePuzzle, settle: settle, mood: mood, isAsking: isAsking, needsCare: needsCare,
         TREASURES: TREASURES, heroSVG: heroSVG,
-        ACCESSORIES: ACCESSORIES, DOLLS: DOLLS, HAIR_SHOP: HAIR_SHOP,
+        ACCESSORIES: ACCESSORIES, DOLLS: DOLLS, HAIR_SHOP: HAIR_SHOP, FURNITURE: FURNITURE, WALLS: WALLS,
         coins: coins, owns: owns, rarePool: rarePool, meetRare: meetRare,
         RARE_CHANCE: RARE_CHANCE, save: save,
         players: function () { return players; }

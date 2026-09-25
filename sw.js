@@ -1,18 +1,23 @@
 /* ------------------------------------------------------------------ *
- * אי החברזים — עבודה בלי אינטרנט
+ * עיר החברזים — עבודה בלי אינטרנט
  *
- * המשחק הוא ארבעה קבצים סטטיים בלי שום קריאת רשת, אז אפשר פשוט
- * לשמור את כולם במטמון בהתקנה ולהגיש משם. עדכון הגרסה למטה מחליף
- * את כל המטמון — אין קבצים ישנים שנשארים מאחור.
+ * כל העולם הוא קבצים סטטיים בלי שום קריאת רשת, אז שומרים את כולם
+ * במטמון כבר בהתקנה — גם בניין שעוד לא ביקרו בו נפתח בלי קליטה.
+ * עדכון הגרסה למטה מחליף את כל המטמון, בלי קבצים ישנים מאחור.
+ *
+ * כשמוסיפים קובץ למשחק, מוסיפים אותו גם לרשימה ומעלים את הגרסה.
  * ------------------------------------------------------------------ */
 
-var CACHE = 'chavrezim-v1';
+var CACHE = 'chavrezim-v5';
 
 var SHELL = [
+    './world.html', './world.css', './world.js', './kit.js', './pwa.js', './parent.js',
+    './places.html', './places.css', './places.js', './places-more.css', './places-more.js',
+    './bakery.html', './bakery.css', './bakery.js',
     './game.html',
     './game.css',
     './game.js',
-    './manifest.webmanifest',
+    './manifest.json',
     './icons/icon-192.png',
     './icons/icon-512.png',
     './icons/icon-maskable-512.png'
@@ -50,7 +55,7 @@ self.addEventListener('fetch', function (event) {
                 caches.open(CACHE).then(function (cache) { cache.put(event.request, copy); });
                 return response;
             }).catch(function () {
-                return caches.match('./game.html');
+                return caches.match('./world.html');
             });
         })
     );
