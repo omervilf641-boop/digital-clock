@@ -1,13 +1,13 @@
 {
-  "name": "אי החברזים",
+  "name": "עיר החברזים",
   "short_name": "חברזים",
-  "description": "משחק ידידותי לגיל 5-6: מטיילים באי, פותרים חידה קטנה ואוספים חברזים חמודים.",
+  "description": "עולם לגיל 5-6: עיר עם בניינים ומשחקים — אי החברזים, מאפייה, מרפאה, מספרה, גינה, מוזיקה, גלידרייה וסטודיו.",
   "lang": "he",
   "dir": "rtl",
-  "start_url": "./game.html",
+  "start_url": "./world.html",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#9fd8f5",
   "theme_color": "#7fd3ff",
   "categories": [

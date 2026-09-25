@@ -560,3 +560,9 @@ body {
 @keyframes notes { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
 .big-cone { transform-box: fill-box; transform-origin: bottom center; animation: sway 2.6s ease-in-out infinite; }
+
+/* כפתור ההתקנה — קופץ ומזמין, רק כשהדפדפן באמת מוכן */
+.tool.install { background: #6fd6b0; animation: invite 1.6s ease-in-out infinite; }
+.tool.install[hidden] { display: none; }
+@keyframes invite { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+.hud-tools { display: flex; gap: 8px; }
