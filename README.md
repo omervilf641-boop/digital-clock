@@ -307,6 +307,31 @@ reads and writes to the island's save.
 Same rules as everywhere else: nothing can be lost, wrong picks get a gentle word and then a
 pulsing hint, and every instruction is spoken.
 
+### Getting around, day and night, and the parent corner
+
+**The bus.** Two stops on the street, and 🚌 in the top bar, open a small map of every door. Pick
+one and a bus pulls up, the character climbs on, and the camera rides along the street to the
+door. The far end of a long street is otherwise somewhere a five-year-old never walks to.
+
+**Day and night follow the real clock.** From 17:00 the town turns to evening, with a low orange
+sun and the street lamps on. From 19:30 it's night: moon and stars, glowing windows, and the friends
+asleep where they stand. A little while into a night visit, the nearest friend yawns that it's late
+and offers **🌙 לילה טוב**, which opens a goodnight screen with the character asleep and a short
+lullaby. `?time=day|evening|night` overrides the clock.
+
+**The room** can be furnished from a new shelf in צדפוני's shop: a bed, a sofa, a plant, balloons,
+a rainbow picture, and a wall clock that shows the real time and says it aloud when tapped. There are
+also four wall colours to switch between.
+
+**🔒 The parent corner** opens only with a long press (1.5 s), which an adult does on purpose and a
+child doesn't do by accident. It shows how many minutes were played today. It lets you set a daily
+limit (20–60 minutes), switch the bedtime nudge on or off, and control sound and speech. When the
+limit is reached, every page shows a gentle "time for a break" screen, and a long press gives
+fifteen more minutes. The count resets at midnight. All of it stays in `localStorage` on the device.
+
+**Installing** now installs the whole world: the icon opens the town, and all nineteen files are
+cached up front, so a building never visited before still opens with no connection.
+
 ## Also here: המאפייה של החברזים (`bakery.html`)
 
 A second game for the same child, set in the same world. A chavrez walks into the bakery and orders
