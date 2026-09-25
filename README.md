@@ -267,6 +267,27 @@ in `localStorage`; the 🔊,
 🗣️ and ↺ buttons on the title screen toggle sound, speech, and start over. No build step and no dependencies — `game.html`, `game.css`, `game.js`,
 with the webfont embedded.
 
+## Also here: המאפייה של החברזים (`bakery.html`)
+
+A second game for the same child, set in the same world. A chavrez walks into the bakery and orders
+a cake — as a picture, and out loud — and you make it in four steps: pick the dough, bake it, pick
+the frosting, count on the toppings. Then you serve it, and they eat it.
+
+Almost everything moves. The customer walks in through a door that swings open with a bell, the
+whisk beats the batter while drops splash out of the bowl, the oven glows and its timer fills while
+the pan rises, the frosting drips down the sides, each topping flies in an arc and lands with a
+squash, and the finished cake flies to the customer, who eats it in a shower of crumbs, hearts and
+coins before walking back out. Nearly all of it is CSS keyframes switched on by classes; only the
+flight paths are computed in JS, because they depend on where things actually are on screen.
+
+Same rules as the island: nothing can be lost, there is no clock (the oven never burns), and every
+order is both drawn and spoken so it can be played without reading. A wrong choice makes the
+customer frown and repeat the order; a second one makes the right button pulse. Orders grow from
+one or two toppings to five, then two kinds at once, and new toppings unlock as cakes are served.
+**מִטְבָּח חָפְשִׁי** drops the orders entirely — anything goes, and the customer loves it regardless.
+
+The two games link to each other from their title screens.
+
 ## License
 
 MIT.

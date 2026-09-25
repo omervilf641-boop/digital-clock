@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>המאפייה של החברזים</title>
+    <meta name="description" content="משחק לגיל 5-6: חברזים מזמינים עוגות, ואתם מערבבים, אופים, מקשטים ומגישים.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='14' width='22' height='13' rx='3' fill='%23ffd9a0'/%3E%3Cellipse cx='16' cy='14' rx='11' ry='4' fill='%23ff9ec9'/%3E%3Ccircle cx='16' cy='8' r='3' fill='%23e8344e'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="bakery.css">
+    <meta name="theme-color" content="#ffb3c7">
+</head>
+<body>
+
+<main class="app">
+
+    <!-- ------------------------------------------------ חזית המאפייה -->
+    <section class="screen is-on" id="sTitle">
+        <div class="storefront" aria-hidden="true">
+            <div class="awning"></div>
+            <div class="sign" id="sign"><span>הַמַּאֲפִיָּה</span><small>שֶׁל הַחַבְרֵזִים</small></div>
+            <div class="shopwin">
+                <div class="win-cakes" id="winCakes"></div>
+                <span class="steam s1"></span><span class="steam s2"></span><span class="steam s3"></span>
+            </div>
+            <div class="front-friends" id="frontFriends"></div>
+        </div>
+
+        <p class="title-stats" id="titleStats"></p>
+
+        <button class="big-btn" id="openBtn" type="button">
+            <span aria-hidden="true">🔔</span> לִפְתֹּחַ אֶת הַמַּאֲפִיָּה
+        </button>
+        <button class="big-btn soft-btn" id="freeBtn" type="button">
+            <span aria-hidden="true">🎨</span> מִטְבָּח חָפְשִׁי
+        </button>
+
+        <div class="tools">
+            <button class="tool" id="soundBtn" type="button" aria-pressed="true" title="צלילים">🔊</button>
+            <button class="tool" id="voiceBtn" type="button" aria-pressed="true" title="הקראה">🗣️</button>
+            <a class="tool" href="game.html" title="אי החברזים">🏝️</a>
+        </div>
+    </section>
+
+    <!-- ------------------------------------------------ המטבח -->
+    <section class="screen" id="sShop">
+        <header class="bar">
+            <button class="tool" id="homeBtn" type="button" title="חזרה">🏠</button>
+            <ol class="steps" id="steps" aria-label="שלבים">
+                <li data-step="base">🥣</li>
+                <li data-step="bake">🔥</li>
+                <li data-step="frost">🎂</li>
+                <li data-step="top">🍓</li>
+            </ol>
+            <span class="purse" id="purse">🪙0</span>
+        </header>
+
+        <div class="scene" id="scene">
+            <div class="wall" aria-hidden="true">
+                <div class="shelf"><span>🥐</span><span>🍞</span><span>🥨</span><span>🧁</span></div>
+                <div class="lamp"></div>
+                <div class="clock-deco"></div>
+            </div>
+            <div class="door" id="door" aria-hidden="true"><span class="bell">🔔</span></div>
+            <div class="customer" id="customer"></div>
+            <div class="bubble" id="bubble" hidden></div>
+            <div class="station" id="station"></div>
+            <div class="counter" aria-hidden="true"></div>
+        </div>
+
+        <p class="line" id="line"></p>
+        <div class="tray" id="tray"></div>
+    </section>
+
+</main>
+
+<div class="fx" id="fx" aria-hidden="true"></div>
+
+<script src="bakery.js"></script>
+</body>
+</html>
